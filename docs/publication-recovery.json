@@ -1,0 +1,47 @@
+{
+  "at": "2026-11-05T05:27:21.906Z",
+  "recoveredCommittedChange": true,
+  "additionalPublicQueriesAfterRestart": 0,
+  "responses": [
+    {
+      "route": "/",
+      "status": 200,
+      "cache": "HIT"
+    },
+    {
+      "route": "/productos",
+      "status": 200,
+      "cache": "HIT"
+    },
+    {
+      "route": "/nosotros",
+      "status": 200,
+      "cache": "HIT"
+    },
+    {
+      "route": "/contacto",
+      "status": 200,
+      "cache": "HIT"
+    },
+    {
+      "route": "/productos/sofa-olivo",
+      "status": 200,
+      "cache": "HIT"
+    },
+    {
+      "route": "/paginas/terminos",
+      "status": 200,
+      "cache": "HIT"
+    },
+    {
+      "route": "/productos",
+      "status": 200,
+      "cache": "HIT"
+    },
+    {
+      "route": "/productos/no-existe-bb5e2134-4127-4ff5-9d82-d608e47ff4a6",
+      "status": 404,
+      "cache": "MISS"
+    }
+  ]
+}

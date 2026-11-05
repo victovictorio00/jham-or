@@ -1,0 +1,149 @@
+generator client {
+ provider = "prisma-client-js"
+}
+datasource db {
+ provider = "postgresql"
+ url = env("DATABASE_URL")
+}
+model User {
+ id String @id @default(uuid()) @db.Uuid
+ name String
+ email String @unique
+ phone String @default("")
+ passwordHash String
+ role String @default("CUSTOMER")
+ active Boolean @default(true)
+ createdAt DateTime @default(now())
+ sessions Session[]
+ orders Order[]
+ @@index([role, createdAt])
+}
+model Session {
+ id String @id @default(uuid()) @db.Uuid
+ tokenHash String @unique
+ userId String @db.Uuid
+ user User @relation(fields:[userId], references:[id],onDelete:Cascade)
+ expiresAt DateTime
+ @@index([userId])
+ @@index([expiresAt])
+}
+model Category {
+ id String @id @default(uuid()) @db.Uuid
+ name String @unique
+ slug String @unique
+ description String @default("")
+ image String @default("")
+ active Boolean @default(true)
+ position Int @default(0)
+ products Product[]
+}
+model Product {
+ id String @id @default(uuid()) @db.Uuid
+ name String
+ slug String @unique
+ sku String @unique
+ description String
+ price Int
+ salePrice Int?
+ categoryId String @db.Uuid
+ category Category @relation(fields:[categoryId],references:[id])
+ image String
+ gallery String[] @default([])
+ material String
+ dimensions String
+ finishes String[] @default([])
+ leadDays Int @default(7)
+ stock Int @default(0)
+ madeToOrder Boolean @default(false)
+ featured Boolean @default(false)
+ active Boolean @default(true)
+ deletedAt DateTime?
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ @@index([active,deletedAt,categoryId])
+ @@index([featured,active,deletedAt])
+}
+model Order {
+ id String @id @default(uuid()) @db.Uuid
+ number Int @unique @default(autoincrement())
+ userId String @db.Uuid
+ user User @relation(fields:[userId],references:[id])
+ idempotencyKey String @unique
+ customerName String
+ email String
+ phone String
+ address String
+ district String
+ delivery String
+ payment String
+ paymentStatus String @default("PENDING")
+ status String @default("PENDING")
+ subtotal Int
+ shipping Int
+ discount Int @default(0)
+ total Int
+ notes String @default("")
+ coupon String?
+ items Json
+ history Json @default("[]")
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ @@index([userId,createdAt])
+ @@index([status,createdAt])
+ @@index([createdAt])
+}
+model Coupon {
+ id String @id @default(uuid()) @db.Uuid
+ code String @unique
+ percent Int
+ minimum Int @default(0)
+ active Boolean @default(true)
+ expiresAt DateTime?
+}
+model Page {
+ id String @id @default(uuid()) @db.Uuid
+ title String
+ slug String @unique
+ content String
+ seoDescription String @default("")
+ published Boolean @default(false)
+ updatedAt DateTime @updatedAt
+}
+model Setting {
+ key String @id
+ value Json
+ updatedAt DateTime @updatedAt
+}
+model Media {
+ id String @id @default(uuid()) @db.Uuid
+ url String @unique
+ name String
+ alt String @default("")
+ width Int
+ height Int
+ size Int
+ createdAt DateTime @default(now())
+}
+model Audit {
+ id String @id @default(uuid()) @db.Uuid
+ actor String
+ action String
+ entity String
+ entityId String
+ summary String
+ createdAt DateTime @default(now())
+ @@index([createdAt])
+}
+model RateLimit {
+ key String @id
+ count Int
+ expiresAt DateTime
+ @@index([expiresAt])
+}
+
+// A revision changes in the same transaction as public data. The published
+// snapshot keeps these revisions, so an interrupted publication recovers at boot.
+model PublicationState {
+ key String @id
+ revision String
+}

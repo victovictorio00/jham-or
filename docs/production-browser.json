@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-05T05:30:58.726Z",
+  "pages": 46,
+  "errors": [],
+  "mobileSample": {
+    "lcp": 1292,
+    "cls": 0,
+    "ttfb": 67.79999995231628,
+    "requests": 25,
+    "notes": "One cold browser sample: 390px viewport, 150ms latency, 1.6Mbps download, CPU 4x. Not field Core Web Vitals."
+  },
+  "cookieFlags": true
+}

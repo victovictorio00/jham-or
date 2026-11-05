@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.env
+.env.*
+uploads
+test-results
+playwright-report
+*.log
+
+ACCESO_ADMIN.txt
+
+var/*
+!var/publication.json
