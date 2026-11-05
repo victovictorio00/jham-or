@@ -56,3 +56,7 @@ Los permisos se comprueban antes de consultar datos privados y en cada mutación
 Conserva copias de PostgreSQL (`pg_dump`) y del volumen de imágenes. Prueba la restauración periódicamente. `scripts/maintenance.mjs` elimina sesiones y límites de intentos caducados; puede programarse una vez al día, cargando `.env` desde este proyecto.
 
 Consulta [la guía del panel](docs/ADMIN.md) y [la verificación](docs/VERIFICATION.md).
+
+## Historial detallado del proyecto
+
+La carpeta [docs/historial](docs/historial/README.md) reúne registros Markdown con nombres como `JF-01-creacion-del-proyecto.md` y `JF-02-tecnologias-y-motivos.md`. Documenta el origen, las tecnologías y sus motivos, la arquitectura, los cambios realizados, las verificaciones y la operación. Incluye el índice, la cronología de commits y el procedimiento para continuar desde JF-25. Las [instrucciones del repositorio](AGENTS.md) requieren registrar los próximos cambios relevantes con el mismo formato.
