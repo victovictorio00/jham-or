@@ -1,0 +1,42 @@
+{
+  "at": "2026-11-05T02:40:00.166Z",
+  "base": "http://localhost:3012",
+  "notes": "Sequential HTTP requests from this server after warming each route; complete HTML responses, no browser/network simulation. Private session checks and health checks are intentionally outside the public catalog counter.",
+  "results": [
+    {
+      "path": "/",
+      "requests": 15,
+      "additionalCatalogQueries": 0,
+      "p50ms": 16.7,
+      "p95ms": 47.2
+    },
+    {
+      "path": "/productos",
+      "requests": 15,
+      "additionalCatalogQueries": 0,
+      "p50ms": 15,
+      "p95ms": 18.5
+    },
+    {
+      "path": "/productos/sofa-olivo",
+      "requests": 15,
+      "additionalCatalogQueries": 0,
+      "p50ms": 12.5,
+      "p95ms": 16.5
+    },
+    {
+      "path": "/nosotros",
+      "requests": 15,
+      "additionalCatalogQueries": 0,
+      "p50ms": 10.8,
+      "p95ms": 14.2
+    },
+    {
+      "path": "/paginas/terminos",
+      "requests": 15,
+      "additionalCatalogQueries": 0,
+      "p50ms": 11.3,
+      "p95ms": 14.7
+    }
+  ]
+}

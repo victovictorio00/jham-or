@@ -1,0 +1,12 @@
+node_modules/
+.next/
+.env
+.env.*
+!.env.example
+uploads/*
+!uploads/.gitkeep
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+ACCESO_ADMIN.txt

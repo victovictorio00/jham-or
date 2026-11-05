@@ -1,0 +1,8 @@
+import {PrismaClient} from '@prisma/client';
+import {writeFile} from 'node:fs/promises';
+const db=new PrismaClient();
+const base=process.env.PERF_BASE_URL||'http://localhost:3012';
+const paths=['/','/productos','/productos/sofa-olivo','/nosotros','/paginas/terminos'];
+async function count(){const rows=await db.$queryRaw`SELECT coalesce(sum(calls),0)::bigint AS calls FROM pg_stat_statements WHERE dbid=(SELECT oid FROM pg_database WHERE datname=current_database()) AND query ~ '(FROM|JOIN) "public"\."(Product|Category|Setting|Page)"'`;return Number(rows[0].calls)}
+async function visit(path){const start=performance.now();const r=await fetch(base+path);await r.text();if(!r.ok)throw new Error(path+': '+r.status);return performance.now()-start}
+try{const results=[];for(const path of paths){await visit(path);await new Promise(resolve=>setTimeout(resolve,300));const before=await count();const times=[];for(let i=0;i<15;i++)times.push(await visit(path));await new Promise(resolve=>setTimeout(resolve,1100));const after=await count();times.sort((a,b)=>a-b);results.push({path,requests:15,additionalCatalogQueries:after-before,p50ms:Math.round(times[7]*10)/10,p95ms:Math.round(times[14]*10)/10})}const report={at:new Date().toISOString(),base,notes:'Sequential HTTP requests from this server after warming each route; complete HTML responses, no browser/network simulation. Private session checks and health checks are intentionally outside the public catalog counter.',results};await writeFile('docs/performance.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(results.some(r=>r.additionalCatalogQueries!==0))process.exitCode=1}finally{await db.$disconnect()}
