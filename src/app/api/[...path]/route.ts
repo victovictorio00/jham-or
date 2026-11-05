@@ -313,7 +313,8 @@ async function handler(req: Request, context: Context) {
         const previous = await db.setting.findUnique({
           where: { key: "store" },
         });
-        if (JSON.stringify(previous?.value) === JSON.stringify(data))
+        if (previous && Object.entries(data).every(([key,value]) =>
+          JSON.stringify((previous.value as Record<string,unknown>)[key]) === JSON.stringify(value)))
           return Response.json({ ok: true, unchanged: true });
         await db.$transaction([
           db.setting.upsert({

@@ -241,6 +241,9 @@ test("admin edits publish immediately and unchanged saves do not add audit recor
       ).toBeTruthy();
     }
   }
+  await page.goto('/admin/configuracion');
+  await page.getByRole('button',{name:'Guardar cambios'}).click();
+  await expect(page.getByText('No hay cambios nuevos.')).toBeVisible();
   await page.goto("/admin/productos?edit=new");
   await page.getByLabel("Nombre", { exact: true }).fill("Mueble QA publicado");
   await page.getByLabel("Enlace (slug)", { exact: true }).fill("qa-publicado");
@@ -386,6 +389,13 @@ test("private order isolation, coupons, manufactured furniture and image uploads
   const exported = await admin.get("/api/admin/export");
   expect(exported.status()).toBe(200);
   expect(exported.headers()["content-type"]).toContain("text/csv");
+  const settingBefore=await db.setting.findUniqueOrThrow({where:{key:'store'}});
+  const auditBefore=await db.audit.count();
+  const noChange=await admin.put('/api/admin/settings',{data:settingBefore.value});
+  expect(noChange.status()).toBe(200);
+  expect((await noChange.json()).unchanged).toBe(true);
+  expect((await db.setting.findUniqueOrThrow({where:{key:'store'}})).updatedAt.toISOString()).toBe(settingBefore.updatedAt.toISOString());
+  expect(await db.audit.count()).toBe(auditBefore);
   await admin.dispose();
   await customer.dispose();
 });

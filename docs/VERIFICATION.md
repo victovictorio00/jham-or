@@ -6,8 +6,8 @@ Publicado: https://jhamor.purprum.com. Panel: https://jhamor.purprum.com/admin.
 
 - Compilación de producción y TypeScript correctos con Next.js 16.4.5, React 19 y Prisma 6.19.0.
 - 7 pruebas de validación aprobadas.
-- 7 pruebas E2E aprobadas (19,7 s), contra la misma imagen Docker publicada, sobre la base independiente `jhamor_test`.
-- Las pruebas cubren catálogo y filtros, bolsa persistente, registro y autenticación, protección administrativa y de origen, compra, aislamiento de pedidos entre cuentas, stock concurrente, idempotencia, cancelación única, publicación de cambios, guardados sin cambios, cupones, fabricación a pedido, subida y conversión de imágenes y exportación CSV.
+- 7 pruebas E2E aprobadas (21,7 s), contra la misma imagen Docker publicada, sobre la base independiente `jhamor_test`.
+- Las pruebas cubren catálogo y filtros, bolsa persistente, registro y autenticación, protección administrativa y de origen, compra, aislamiento de pedidos entre cuentas, stock concurrente, idempotencia, cancelación única, publicación de cambios, guardados sin cambios de productos y configuración (incluyendo timestamps y auditoría), cupones, fabricación a pedido, subida y conversión de imágenes y exportación CSV.
 - Revisión en producción: 46 combinaciones de página y tamaño, sin errores de JavaScript ni desbordamiento horizontal. Tienda en 360, 390, 768 y 1440 px; panel en 390 y 1440 px.
 - Cookie de producción comprobada: HttpOnly, Secure y SameSite=Lax.
 - `npm audit --omit=dev`: 0 vulnerabilidades conocidas al verificar. Las dependencias de producción se actualizaron antes de publicar.
@@ -19,11 +19,11 @@ Informe: [performance.json](performance.json). Se calentaron cinco rutas públic
 
 | Ruta | Peticiones después de calentar | Consultas adicionales de catálogo/contenido | Mediana de respuesta completa |
 | --- | ---: | ---: | ---: |
-| Inicio | 15 | 0 | 57,0 ms |
-| Catálogo | 15 | 0 | 39,6 ms |
-| Detalle del sofá | 15 | 0 | 39,8 ms |
-| Nosotros | 15 | 0 | 54,0 ms |
-| Términos | 15 | 0 | 27,5 ms |
+| Inicio | 15 | 0 | 54,7 ms |
+| Catálogo | 15 | 0 | 35,9 ms |
+| Detalle del sofá | 15 | 0 | 35,7 ms |
+| Nosotros | 15 | 0 | 31,8 ms |
+| Términos | 15 | 0 | 31,6 ms |
 
 La sesión y los permisos se validan en cada petición privada; no se pretende eliminar esas comprobaciones. El catálogo se invalida al cambiar productos, categorías o stock. Las compras y cancelaciones se validan contra PostgreSQL dentro de transacciones, aunque la ficha pública tenga una copia en caché.
 
@@ -31,7 +31,7 @@ Muestra móvil de navegador: [production-browser.json](production-browser.json),
 
 ## Despliegue y operaciones
 
-Imagen probada/publicada: `sha256:db3e2fa19368a1a54123d8377b52a517cb2fd1c10432cefbfc4d76646af343f2`.
+Imagen probada/publicada: `sha256:b41f26b9d2c28e063c460609e4ae3b16f5dbed97f2e6f841bfa1a812691b8150`.
 
 Compose: proyecto `jhamor`; PostgreSQL aislado y volumen propio de imágenes. La base usa el alias privado `jhamor-db` para evitar ambigüedad con los PostgreSQL de otros proyectos. El contenedor de aplicación se ejecuta como usuario `app` sin privilegios, y no contiene archivos de credenciales. No publica puertos de aplicación hacia Internet; Nginx la alcanza por la red interna.
 

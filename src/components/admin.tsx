@@ -362,7 +362,7 @@ export function Editor({
     e.preventDefault();
     setError("");
     setSuccess("");
-    if (!changed && initial.id) {
+    if (!changed && (initial.id || section === "configuracion")) {
       setSuccess("No hay cambios nuevos.");
       return;
     }

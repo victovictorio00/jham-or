@@ -1,5 +1,5 @@
 {
-  "at": "2026-11-05T02:41:12.345Z",
+  "at": "2026-11-05T02:46:58.554Z",
   "base": "https://jhamor.purprum.com",
   "notes": "Sequential HTTP requests from this server after warming each route; complete HTML responses, no browser/network simulation. Private session checks and health checks are intentionally outside the public catalog counter.",
   "results": [
@@ -7,36 +7,36 @@
       "path": "/",
       "requests": 15,
       "additionalCatalogQueries": 0,
-      "p50ms": 57,
-      "p95ms": 177.6
+      "p50ms": 54.7,
+      "p95ms": 78.1
     },
     {
       "path": "/productos",
       "requests": 15,
       "additionalCatalogQueries": 0,
-      "p50ms": 39.6,
-      "p95ms": 155.6
+      "p50ms": 35.9,
+      "p95ms": 53
     },
     {
       "path": "/productos/sofa-olivo",
       "requests": 15,
       "additionalCatalogQueries": 0,
-      "p50ms": 39.8,
-      "p95ms": 112.7
+      "p50ms": 35.7,
+      "p95ms": 48.2
     },
     {
       "path": "/nosotros",
       "requests": 15,
       "additionalCatalogQueries": 0,
-      "p50ms": 54,
-      "p95ms": 173.9
+      "p50ms": 31.8,
+      "p95ms": 36.1
     },
     {
       "path": "/paginas/terminos",
       "requests": 15,
       "additionalCatalogQueries": 0,
-      "p50ms": 27.5,
-      "p95ms": 32.1
+      "p50ms": 31.6,
+      "p95ms": 50.8
     }
   ]
 }
