@@ -4,7 +4,7 @@ export async function GET(
   { params }: { params: Promise<{ name: string }> },
 ) {
   const { name } = await params;
-  if (!/^[a-f0-9-]{36}\.webp$/.test(name))
+  if (!/^[a-f0-9-]{36}(?:-thumb)?\.webp$/.test(name))
     return new Response(null, { status: 404 });
   try {
     const bytes = await readFile(

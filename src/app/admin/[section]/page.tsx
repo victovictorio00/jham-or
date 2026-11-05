@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { adminPage } from "@/lib/auth";
 import { settings } from "@/lib/catalog";
+import { mediaOptions as imageOptions } from "@/lib/media-options";
 import {
   Editor,
   MediaUpload,
@@ -89,7 +90,11 @@ export default async function AdminSection({
   const take = 31;
   const search = (field: string) =>
     q ? { [field]: { contains: q, mode: "insensitive" } } : {};
-  if (section === "configuracion")
+  if (section === "configuracion") {
+    const [storeSettings, images] = await Promise.all([
+      settings(),
+      imageOptions(),
+    ]);
     return (
       <>
         <div className="admin-title">
@@ -102,14 +107,11 @@ export default async function AdminSection({
           </Link>
         </div>
         <div className="panel">
-          <Editor
-            section={section}
-            initial={await settings()}
-            images={await imageOptions()}
-          />
+          <Editor section={section} initial={storeSettings} images={images} />
         </div>
       </>
     );
+  }
   if (edit) {
     let initial: unknown = { active: true };
     if (edit !== "new") {
@@ -614,28 +616,4 @@ export default async function AdminSection({
       </div>
     </>
   );
-}
-async function imageOptions() {
-  const media = await db.media.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 200,
-    select: { url: true, name: true },
-  });
-  return [
-    ...media,
-    ...[
-      "hero",
-      "sofa",
-      "chair",
-      "dining",
-      "bed",
-      "table",
-      "shelf",
-      "room",
-      "armchair",
-    ].map((name) => ({
-      url: `/images/${name}.webp`,
-      name: `Muestra: ${name}`,
-    })),
-  ];
 }

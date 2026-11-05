@@ -1,0 +1,18 @@
+import {chromium} from '@playwright/test';
+import {writeFile} from 'node:fs/promises';
+const base='https://jhamor.purprum.com';
+const browser=await chromium.launch();
+const report={at:new Date().toISOString(),decorativeHeaderRemoved:false,compactNavigation:false,preferencePersisted:false,mobileNavigation:false,coverSelectionApiRequests:null,libraryRefreshApiRequests:null,javascriptErrors:[]};
+try{
+ const context=await browser.newContext({viewport:{width:1440,height:1000}});const page=await context.newPage();page.on('pageerror',error=>report.javascriptErrors.push(error.message));
+ const login=await context.request.post(base+'/api/auth/login',{headers:{Origin:base},data:{email:process.env.ADMIN_EMAIL,password:process.env.ADMIN_PASSWORD}});if(!login.ok())throw new Error('No se pudo verificar el acceso administrativo con las credenciales disponibles.');
+ await page.goto(base+'/admin');await page.getByRole('heading',{level:1}).waitFor();
+ if(await page.locator('.admin-header').count()||await page.getByText('Tu negocio, en orden.',{exact:true}).count())throw new Error('La franja decorativa sigue presente.');report.decorativeHeaderRemoved=true;
+ const collapse=page.getByRole('button',{name:'Contraer menú lateral'});await collapse.click();if(await page.locator('.admin-sidebar').evaluate(el=>el.getBoundingClientRect().width)>80)throw new Error('El menú no se contrajo.');await page.getByRole('link',{name:'Imágenes',exact:true}).click();await page.waitForURL(base+'/admin/media');report.compactNavigation=true;await page.reload();await page.getByRole('button',{name:'Expandir menú lateral'}).waitFor();report.preferencePersisted=true;
+ await page.getByRole('link',{name:'Diseño y tienda',exact:true}).click();await page.waitForURL(base+'/admin/configuracion');const selection=page.getByLabel('Fotografía de portada',{exact:true});const original=await selection.inputValue();const alternative=await selection.locator('option').evaluateAll(options=>options.map(o=>o.value).find(v=>v.startsWith('/media/'))||'/images/chair.webp');let api=0;page.on('request',r=>{if(new URL(r.url()).pathname.startsWith('/api/'))api++});
+ await selection.selectOption(alternative);await page.getByAltText('Imagen seleccionada',{exact:true}).waitFor();report.coverSelectionApiRequests=api;if(api!==0)throw new Error('Seleccionar portada realizó una llamada a la API.');
+ await page.getByRole('button',{name:'Actualizar biblioteca',exact:true}).click();await page.getByRole('button',{name:'Actualizar biblioteca',exact:true}).waitFor({state:'visible'});await page.waitForFunction(()=>[...document.querySelectorAll('button')].some(button=>button.textContent?.trim()==='Actualizar biblioteca'&&!button.disabled));report.libraryRefreshApiRequests=api;if(api!==1)throw new Error('Actualizar biblioteca realizó peticiones adicionales.');await selection.selectOption(original);
+ await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Abrir menú',exact:true}).click();await page.getByRole('link',{name:'Muebles',exact:true}).click();await page.waitForURL(base+'/admin/productos');if(!await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1))throw new Error('Desbordamiento móvil.');report.mobileNavigation=true;
+ await page.getByRole('button',{name:'Abrir menú',exact:true}).click();await page.getByRole('button',{name:'Cerrar sesión',exact:true}).click();await page.waitForURL(base+'/');if(report.javascriptErrors.length)throw new Error(report.javascriptErrors.join('\n'));await context.close();
+ await writeFile('docs/admin-production-verification.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));
+}finally{await browser.close()}

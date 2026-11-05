@@ -2,6 +2,8 @@
 
 Entra en https://jhamor.purprum.com/admin. Si todavía no has iniciado sesión, la web te lleva al formulario de acceso. La cuenta de propietario inicial se guarda en `.env` del servidor: `ADMIN_EMAIL` y `ADMIN_PASSWORD`. Cambia la contraseña en Mi cuenta y conserva tus credenciales en un gestor de contraseñas.
 
+En escritorio, el botón junto a la marca contrae el menú a iconos y recuerda la elección. Cada icono conserva el nombre de su sección al pasar el cursor. En móvil se utiliza el botón de menú, con cierre mediante Escape o el fondo exterior. La antigua franja decorativa superior se retiró.
+
 ## Apertura
 
 El catálogo de seis muebles es una **muestra**, con fotografías de referencia obtenidas de Unsplash. Sustituye nombres, fotos, materiales, medidas, precios y existencias por tus productos reales. No se han copiado clientes, cuentas ni pedidos de Auriel.
@@ -28,7 +30,9 @@ Clientes permite editar datos y desactivar cuentas. Una cuenta desactivada pierd
 
 ## Imágenes y contenido
 
-Fotos e imágenes acepta archivos de hasta 5 MB y 25 megapíxeles. El servidor los convierte en WebP de hasta 1600 px. Puedes editar el título y texto alternativo y copiar su ruta. Los selectores de productos y portada usan esa biblioteca; después de subir en otra pestaña, pulsa Actualizar biblioteca. Las imágenes se conservan para no romper referencias históricas.
+Fotos e imágenes acepta archivos de hasta 5 MB y 25 megapíxeles. El servidor los convierte en WebP de hasta 1600 px. Puedes editar el título y texto alternativo y copiar su ruta. Los selectores de productos y portada usan miniaturas de esa biblioteca. Después de subir en otra pestaña, pulsa Actualizar biblioteca: se actualizan las opciones sin recargar el editor ni perder sus textos.
+
+Cada tarjeta permite Eliminar. Se pide confirmación y se comprueba su uso; las imágenes vinculadas a productos, galerías, portada, categorías, páginas o pedidos deben conservarse o reemplazarse antes. Las imágenes sin referencias se retiran de la biblioteca junto con el original y la miniatura. Un pedido histórico puede seguir necesitando una imagen aunque la ficha del producto se haya editado.
 
 Páginas y SEO permite guardar borradores, publicar texto y definir descripción para buscadores. El contenido es texto, con saltos de línea; no ejecuta HTML. Diseño y tienda edita la portada, textos, datos y envío. La franja superior de anuncios se retiró. Los cambios publicados regeneran la copia pública y precargan las páginas afectadas. La navegación y las búsquedas no consultan la base de datos. Guardar un registro sin cambios no genera otra escritura o auditoría.
 

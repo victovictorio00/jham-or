@@ -37,7 +37,12 @@ export async function publicWarmupManifest(resource?: PublicationResource) {
         `/_next/image?${new URLSearchParams({ url: src, w: String(width), q: "75" })}`,
     ),
   );
-  return { version: snapshot.version, routes: [...new Set(routes)], images };
+  return {
+    version: snapshot.version,
+    revisions: snapshot.revisions,
+    routes: [...new Set(routes)],
+    images,
+  };
 }
 export async function prewarmPublication(resource?: PublicationResource) {
   const manifest = await publicWarmupManifest(resource);
@@ -46,9 +51,16 @@ export async function prewarmPublication(resource?: PublicationResource) {
     `http://127.0.0.1:${process.env.PORT || 3012}`;
   const pending = [...manifest.routes, ...manifest.images];
   const failures: string[] = [];
+  const isCurrent = async () => {
+    const current = await readPublishedSnapshot();
+    return resource
+      ? current.revisions[resource] === manifest.revisions[resource]
+      : current.version === manifest.version;
+  };
   await Promise.all(
     Array.from({ length: 2 }, async () => {
       for (;;) {
+        if (!(await isCurrent())) return;
         const path = pending.shift();
         if (!path) return;
         try {
@@ -57,8 +69,10 @@ export async function prewarmPublication(resource?: PublicationResource) {
             signal: AbortSignal.timeout(30000),
           });
           await response.arrayBuffer();
-          if (!response.ok) failures.push(`${path}: ${response.status}`);
+          if (!response.ok && (await isCurrent()))
+            failures.push(`${path}: ${response.status}`);
         } catch (e) {
+          if (!(await isCurrent())) return;
           failures.push(`${path}: ${e instanceof Error ? e.message : "error"}`);
         }
       }

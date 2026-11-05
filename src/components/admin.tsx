@@ -19,6 +19,9 @@ import {
   X,
   Save,
   Upload,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Trash2,
 } from "lucide-react";
 import { request, Logout } from "./forms";
 import { money, statuses, transitions } from "@/lib/shared";
@@ -39,26 +42,87 @@ const nav = [
 export function AdminShell({
   name,
   children,
+  initialCollapsed = false,
 }: {
   name: string;
   children: React.ReactNode;
+  initialCollapsed?: boolean;
 }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(initialCollapsed);
+  useEffect(() => setOpen(false), [path]);
+  useEffect(() => {
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", escape);
+    return () => document.removeEventListener("keydown", escape);
+  }, []);
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
+  const toggle = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    document.cookie = `jhamor_admin_sidebar=${next ? "compact" : "expanded"}; Path=/admin; Max-Age=31536000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
+  };
   return (
-    <div className="admin-shell">
-      <aside className={`admin-sidebar ${open ? "open" : ""}`}>
-        <Link href="/admin" className="wordmark">
-          JHAM-OR<small>ADMINISTRACIÓN</small>
-        </Link>
+    <div className={`admin-shell${collapsed ? " is-collapsed" : ""}`}>
+      {open && (
+        <button
+          className="admin-menu-overlay"
+          aria-label="Cerrar menú"
+          onClick={() => setOpen(false)}
+        />
+      )}
+      <aside className={`admin-sidebar${open ? " open" : ""}`}>
+        <div className="admin-sidebar-top">
+          <Link
+            href="/admin"
+            className="wordmark"
+            aria-label="Jham-or, resumen"
+          >
+            <span className="sidebar-brand-full">
+              JHAM-OR<small>ADMINISTRACIÓN</small>
+            </span>
+            <span className="sidebar-brand-mark" aria-hidden="true">
+              J
+            </span>
+          </Link>
+          <button
+            className="icon-button sidebar-toggle"
+            type="button"
+            aria-label={
+              collapsed ? "Expandir menú lateral" : "Contraer menú lateral"
+            }
+            title={
+              collapsed ? "Expandir menú lateral" : "Contraer menú lateral"
+            }
+            aria-expanded={!collapsed}
+            aria-controls="admin-navigation"
+            onClick={toggle}
+          >
+            {collapsed ? (
+              <PanelLeftOpen size={19} />
+            ) : (
+              <PanelLeftClose size={19} />
+            )}
+          </button>
+        </div>
         <button
           className="icon-button close-sidebar"
-          aria-label="Cerrar menú"
+          aria-label="Cerrar menú lateral"
           onClick={() => setOpen(false)}
         >
           <X />
         </button>
-        <nav aria-label="Administración">
+        <nav id="admin-navigation" aria-label="Administración">
           {nav.map(([slug, label, Icon]) => (
             <Link
               href={`/admin${slug ? "/" + slug : ""}`}
@@ -68,37 +132,47 @@ export function AdminShell({
                 path === `/admin${slug ? "/" + slug : ""}` ? "active" : ""
               }
               prefetch={false}
+              aria-label={label}
+              title={label}
             >
-              <Icon size={18} />
-              {label}
+              <Icon size={19} />
+              <span className="sidebar-label">{label}</span>
             </Link>
           ))}
         </nav>
-        <Link href="/" target="_blank" className="view-store">
-          Ver mi tienda <ExternalLink size={16} />
-        </Link>
-        <p className="small">{name}</p>
-        <Logout />
+        <div className="admin-sidebar-footer">
+          <Link
+            href="/"
+            target="_blank"
+            className="view-store"
+            aria-label="Ver mi tienda"
+            title="Ver mi tienda"
+          >
+            <ExternalLink size={18} />
+            <span>Ver mi tienda</span>
+          </Link>
+          <p className="small sidebar-user">{name}</p>
+          <Logout icon />
+        </div>
       </aside>
       <div className="admin-body">
-        <header className="admin-header">
+        <div className="admin-mobile-toolbar">
           <button
-            className="icon-button mobile-menu"
+            className="icon-button"
             aria-label="Abrir menú"
+            aria-expanded={open}
+            aria-controls="admin-navigation"
             onClick={() => setOpen(!open)}
           >
             <Menu />
           </button>
-          <span>Tu negocio, en orden.</span>
-          <span>
-            JHAM-OR <small>· PEN / S/</small>
-          </span>
-        </header>
+        </div>
         <main className="admin-content">{children}</main>
       </div>
     </div>
   );
 }
+
 type Field = {
   key: string;
   label: string;
@@ -312,7 +386,7 @@ export function Editor({
   section: string;
   initial?: Record<string, unknown>;
   categories?: { id: string; name: string }[];
-  images?: { url: string; name: string }[];
+  images?: { url: string; name: string; thumbnailUrl?: string | null }[];
 }) {
   const router = useRouter();
   const c = config[section];
@@ -320,6 +394,20 @@ export function Editor({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [busy, setBusy] = useState(false);
+  const [imageChoices, setImageChoices] = useState(images);
+  const [refreshingImages, setRefreshingImages] = useState(false);
+  useEffect(() => setImageChoices(images), [images]);
+  const refreshImages = async () => {
+    setRefreshingImages(true);
+    try {
+      const result = await request("/api/admin/media-options", "GET");
+      setImageChoices(result.items);
+    } catch (error) {
+      setError((error as Error).message);
+    } finally {
+      setRefreshingImages(false);
+    }
+  };
   const formRef = useRef<HTMLFormElement>(null);
   const changed = JSON.stringify(values) !== JSON.stringify(initial);
   useEffect(() => {
@@ -478,11 +566,19 @@ export function Editor({
                     <div className="image-picker">
                       {Boolean(value) && (
                         <Image
-                          src={String(value)}
+                          src={
+                            imageChoices.find((image) => image.url === value)
+                              ?.thumbnailUrl || String(value)
+                          }
                           alt="Imagen seleccionada"
                           width={100}
                           height={80}
-                          unoptimized
+                          unoptimized={Boolean(
+                            imageChoices.find((image) => image.url === value)
+                              ?.thumbnailUrl,
+                          )}
+                          sizes="100px"
+                          loading="eager"
                         />
                       )}
                       <select
@@ -495,8 +591,9 @@ export function Editor({
                         {[
                           ...new Map(
                             [
-                              ...images,
-                              ...(value
+                              ...imageChoices,
+                              ...(value &&
+                              !imageChoices.some((image) => image.url === value)
                                 ? [
                                     {
                                       url: String(value),
@@ -522,9 +619,12 @@ export function Editor({
                       <button
                         type="button"
                         className="text-button small"
-                        onClick={() => router.refresh()}
+                        onClick={refreshImages}
+                        disabled={refreshingImages}
                       >
-                        Actualizar biblioteca
+                        {refreshingImages
+                          ? "Actualizando…"
+                          : "Actualizar biblioteca"}
                       </button>
                     </div>
                   ) : f.type === "lines" || f.type === "images" ? (
@@ -561,7 +661,7 @@ export function Editor({
                           <option value="">
                             Añadir imagen de la biblioteca…
                           </option>
-                          {images.map((i) => (
+                          {imageChoices.map((i) => (
                             <option value={i.url} key={i.url}>
                               {i.name}
                             </option>
@@ -730,6 +830,7 @@ export function MediaCard({
   item: {
     id: string;
     url: string;
+    thumbnailUrl?: string | null;
     name: string;
     alt: string;
     width: number;
@@ -738,21 +839,35 @@ export function MediaCard({
   };
 }) {
   const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [removed, setRemoved] = useState(false);
+  const router = useRouter();
+  if (removed) return null;
   return (
-    <article className="media-card">
-      <Image src={item.url} alt={item.alt} width={300} height={220} />
+    <article className="media-card" aria-label={item.name}>
+      <Image
+        src={item.thumbnailUrl || item.url}
+        alt={item.alt}
+        width={300}
+        height={220}
+        sizes="(max-width:600px) 90vw, 300px"
+        unoptimized={Boolean(item.thumbnailUrl)}
+      />
       <form
-        onSubmit={async (e) => {
-          e.preventDefault();
+        onSubmit={async (event) => {
+          event.preventDefault();
+          setBusy(true);
           try {
             await request(
               `/api/admin/media/${item.id}`,
               "PATCH",
-              Object.fromEntries(new FormData(e.currentTarget)),
+              Object.fromEntries(new FormData(event.currentTarget)),
             );
             setMessage("Guardado.");
-          } catch (e) {
-            setMessage((e as Error).message);
+          } catch (error) {
+            setMessage((error as Error).message);
+          } finally {
+            setBusy(false);
           }
         }}
       >
@@ -773,16 +888,59 @@ export function MediaCard({
           {item.width} × {item.height} · {Math.round(item.size / 1024)} KB
         </p>
         <div className="actions">
-          <button className="button small-button">Guardar</button>
+          <button className="button small-button" disabled={busy}>
+            Guardar
+          </button>
           <button
             type="button"
             className="text-button"
             onClick={async () => {
-              await navigator.clipboard.writeText(item.url);
-              setMessage("Ruta copiada.");
+              try {
+                await navigator.clipboard.writeText(item.url);
+                setMessage("Ruta copiada.");
+              } catch {
+                setMessage("No se pudo copiar la ruta.");
+              }
             }}
           >
             Copiar ruta
+          </button>
+          <button
+            type="button"
+            className="text-button media-delete"
+            disabled={busy}
+            aria-label={`Eliminar imagen ${item.name}`}
+            onClick={async () => {
+              if (
+                !confirm(
+                  "¿Eliminar esta imagen de la biblioteca y del servidor? Las imágenes en uso deben reemplazarse antes.",
+                )
+              )
+                return;
+              setBusy(true);
+              try {
+                const result = await request(
+                  `/api/admin/media/${item.id}`,
+                  "DELETE",
+                );
+                if (!result.fileRemoved) {
+                  setMessage(
+                    "La imagen se retiró de la biblioteca; no se pudo eliminar alguno de sus archivos.",
+                  );
+                  router.refresh();
+                } else {
+                  setRemoved(true);
+                  router.refresh();
+                }
+              } catch (error) {
+                setMessage((error as Error).message);
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            <Trash2 size={15} />
+            Eliminar
           </button>
         </div>
         {message && (

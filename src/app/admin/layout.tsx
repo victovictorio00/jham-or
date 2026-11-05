@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { adminPage } from "@/lib/auth";
 import { AdminShell } from "@/components/admin";
 export const dynamic = "force-dynamic";
@@ -11,5 +12,14 @@ export default async function Layout({
   children: React.ReactNode;
 }) {
   const u = await adminPage();
-  return <AdminShell name={u.name}>{children}</AdminShell>;
+  return (
+    <AdminShell
+      name={u.name}
+      initialCollapsed={
+        (await cookies()).get("jhamor_admin_sidebar")?.value === "compact"
+      }
+    >
+      {children}
+    </AdminShell>
+  );
 }

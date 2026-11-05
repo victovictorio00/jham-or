@@ -1,10 +1,12 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { db } from "./db";
 import { AppError } from "./auth";
 import { orderSchema } from "./validation";
 import { defaultSettings, transitions } from "./shared";
 import { markPublication } from "./publication";
+import { lockMediaReferences, validateMediaReferences } from "./media";
+import { transaction } from "./transaction";
+export { transaction } from "./transaction";
 import {
   publishAndInvalidate,
   retryPendingPublication,
@@ -20,26 +22,6 @@ export type OrderLine = {
   madeToOrder: boolean;
   leadDays: number;
 };
-export async function transaction<T>(
-  work: (tx: Prisma.TransactionClient) => Promise<T>,
-): Promise<T> {
-  for (let n = 0; ; n++) {
-    try {
-      return await db.$transaction(work, {
-        isolationLevel: "Serializable",
-        timeout: 15000,
-      });
-    } catch (e) {
-      if (
-        n < 3 &&
-        e instanceof Prisma.PrismaClientKnownRequestError &&
-        e.code === "P2034"
-      )
-        continue;
-      throw e;
-    }
-  }
-}
 export async function placeOrder(
   user: { id: string; email: string },
   input: unknown,
@@ -56,6 +38,7 @@ export async function placeOrder(
         throw new AppError(409, "Identificador de pedido no válido.");
       return existing;
     }
+    await lockMediaReferences(tx);
     const uniqueIds = [...new Set(data.items.map((i) => i.productId))];
     const products = await tx.product.findMany({
       where: {
@@ -65,6 +48,10 @@ export async function placeOrder(
         category: { active: true },
       },
     });
+    await validateMediaReferences(
+      tx,
+      products.map((product) => product.image),
+    );
     const lines: OrderLine[] = [];
     const quantities = new Map<string, number>();
     for (const item of data.items) {

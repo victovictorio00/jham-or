@@ -2,7 +2,7 @@
 import { useState, FormEvent, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, LogOut } from "lucide-react";
 import { useCart } from "./shop";
 import { money, safeNext, Settings, statuses } from "@/lib/shared";
 export async function request(url: string, method: string, body?: unknown) {
@@ -167,18 +167,21 @@ export function AuthForm({
     </form>
   );
 }
-export function Logout() {
+export function Logout({ icon = false }: { icon?: boolean }) {
   const router = useRouter();
   return (
     <button
-      className="text-button"
+      className={`text-button${icon ? " sidebar-logout" : ""}`}
+      aria-label="Cerrar sesión"
+      title="Cerrar sesión"
       onClick={async () => {
         await request("/api/auth/logout", "POST");
         router.push("/");
         router.refresh();
       }}
     >
-      Cerrar sesión
+      {icon && <LogOut size={18} />}
+      <span>Cerrar sesión</span>
     </button>
   );
 }

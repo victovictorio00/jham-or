@@ -17,6 +17,7 @@ COPY --from=build --chown=app:app /app/.next/static ./.next/static
 COPY --from=build --chown=app:app /app/public ./public
 COPY --from=build --chown=app:app /app/var/publication.json ./publication-seed.json
 COPY --from=build --chown=app:app /app/scripts/start.mjs ./scripts/start.mjs
+COPY --from=build --chown=app:app /app/scripts/backfill-media-thumbnails.mjs ./scripts/backfill-media-thumbnails.mjs
 USER app
 EXPOSE 3012
 CMD ["node","scripts/start.mjs"]

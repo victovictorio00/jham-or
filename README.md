@@ -59,4 +59,4 @@ Consulta [la guía del panel](docs/ADMIN.md) y [la verificación](docs/VERIFICAT
 
 ## Historial detallado del proyecto
 
-La carpeta [docs/historial](docs/historial/README.md) reúne registros Markdown con nombres como `JF-01-creacion-del-proyecto.md` y `JF-02-tecnologias-y-motivos.md`. Documenta el origen, las tecnologías y sus motivos, la arquitectura, los cambios realizados, las verificaciones y la operación. Incluye el índice, la cronología de commits y el procedimiento para continuar desde JF-25. Las [instrucciones del repositorio](AGENTS.md) requieren registrar los próximos cambios relevantes con el mismo formato.
+La carpeta [docs/historial](docs/historial/README.md) reúne registros Markdown con nombres como `JF-01-creacion-del-proyecto.md` y `JF-02-tecnologias-y-motivos.md`. Documenta el origen, las tecnologías y sus motivos, la arquitectura, los cambios realizados, las verificaciones y la operación. Incluye el índice, la cronología de commits y el procedimiento para continuar con el siguiente identificador del índice. Las [instrucciones del repositorio](AGENTS.md) requieren registrar los próximos cambios relevantes con el mismo formato.

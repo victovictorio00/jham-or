@@ -40,6 +40,9 @@ Fecha de esta serie documental: **5 de noviembre de 2026**. Referencia del códi
 | JF-22 | [Copias de seguridad, salud y mantenimiento](JF-22-copias-de-seguridad-y-mantenimiento.md) | Volúmenes, copias, programación y limpieza. |
 | JF-23 | [Alcance actual, limitaciones y datos pendientes](JF-23-alcance-actual-y-pendientes.md) | Lo implementado, datos de muestra y funciones pendientes. |
 | JF-24 | [Documentación histórica y registro de futuros cambios](JF-24-documentacion-y-registro-de-futuros-cambios.md) | Esta incorporación, plantilla y procedimiento de continuidad. |
+| JF-25 | [Menú lateral contraíble y panel sin franja](JF-25-menu-lateral-contraible-y-panel-sin-franja.md) | Iconos operativos, preferencia persistida y retirada de la cabecera decorativa. |
+| JF-26 | [Eliminación segura de imágenes](JF-26-eliminacion-segura-de-imagenes.md) | Archivos sin uso, referencias, auditoría y operaciones simultáneas. |
+| JF-27 | [Miniaturas y selector de portada](JF-27-miniaturas-y-selector-de-portada.md) | Vista previa pequeña y actualización de biblioteca sin recargar el formulario. |
 
 ## Rutas de lectura sugeridas
 
@@ -51,7 +54,7 @@ Fecha de esta serie documental: **5 de noviembre de 2026**. Referencia del códi
 
 ## Cómo continuar el historial
 
-El próximo número disponible es **JF-25**. Crea `JF-25-titulo-descriptivo.md`, explica el cambio con sus motivos y evidencias y añade su fila a este índice. No renumeres los documentos existentes para insertar un tema nuevo.
+El próximo número disponible es **JF-28**. Crea `JF-28-titulo-descriptivo.md`, explica el cambio con sus motivos y evidencias y añade su fila a este índice. No renumeres los documentos existentes para insertar un tema nuevo.
 
 Una evolución posterior se documenta con otro número y un enlace al antecedente. Los datos comerciales del panel mantienen su auditoría en la aplicación; no se ha instalado un generador automático de Markdown por cada producto editado.
 

@@ -1,0 +1,19 @@
+{
+  "at": "2026-11-05T20:01:30.427Z",
+  "productionImage": "sha256:5e4b0d352a97c2d89aa458ce3b6595cbcd973973ccb9398390a0e5cfe288ac91",
+  "unitTestsPassed": 7,
+  "browserTestsPassed": 14,
+  "legacyThumbnailBatch": {
+    "images": 51,
+    "processed": 51,
+    "failed": 0
+  },
+  "productionThumbnailBackfill": {
+    "processed": 1,
+    "failed": 0
+  },
+  "productionBrowserReport": "admin-production-verification.json",
+  "publicHttpRequests": 105,
+  "additionalPublicQueries": 0,
+  "notes": "All browser mutation tests used jhamor_test. Production browser verification was read-only except for its own login/logout session and browser menu preference."
+}

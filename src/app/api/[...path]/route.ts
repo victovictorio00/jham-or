@@ -36,6 +36,13 @@ import { placeOrder, changeOrder } from "@/lib/orders";
 import { writeFile, mkdir } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
+import { mediaOptions } from "@/lib/media-options";
+import { transaction } from "@/lib/transaction";
+import {
+  deleteMedia,
+  lockMediaReferences,
+  validateMediaReferences,
+} from "@/lib/media";
 export const dynamic = "force-dynamic";
 type Context = { params: Promise<{ path: string[] }> };
 async function handler(req: Request, context: Context) {
@@ -307,6 +314,15 @@ async function handler(req: Request, context: Context) {
           },
         );
       }
+      if (resource === "media-options" && method === "GET")
+        return Response.json(
+          { items: await mediaOptions() },
+          { headers: { "Cache-Control": "private, no-store" } },
+        );
+      if (resource === "media" && id && method === "DELETE")
+        return Response.json(
+          await deleteMedia(z.uuid().parse(id), actor.email),
+        );
       if (resource === "upload" && method === "POST") {
         await rateLimit(`upload:${actor.id}`, 100);
         const form = await req.formData();
@@ -336,9 +352,19 @@ async function handler(req: Request, context: Context) {
           `${process.env.UPLOAD_DIR || "uploads"}/${name}`,
           output.data,
         );
+        const thumbnailName = name.replace(".webp", "-thumb.webp");
+        const thumbnail = await sharp(output.data)
+          .resize(360, 360, { fit: "inside", withoutEnlargement: true })
+          .webp({ quality: 75 })
+          .toBuffer();
+        await writeFile(
+          `${process.env.UPLOAD_DIR || "uploads"}/${thumbnailName}`,
+          thumbnail,
+        );
         const media = await db.media.create({
           data: {
             url: "/media/" + name,
+            thumbnailUrl: "/media/" + thumbnailName,
             name: file.name.slice(0, 200),
             alt: file.name.slice(0, 200),
             size: output.data.length,
@@ -365,13 +391,15 @@ async function handler(req: Request, context: Context) {
           await retryPendingPublication("settings");
           return Response.json({ ok: true, unchanged: true });
         }
-        await db.$transaction([
-          db.setting.upsert({
+        await transaction(async (tx) => {
+          await lockMediaReferences(tx);
+          await validateMediaReferences(tx, data.heroImage);
+          await tx.setting.upsert({
             where: { key: "store" },
             create: { key: "store", value: data },
             update: { value: data },
-          }),
-          db.audit.create({
+          });
+          await tx.audit.create({
             data: {
               actor: actor.email,
               action: "UPDATE",
@@ -379,9 +407,9 @@ async function handler(req: Request, context: Context) {
               entityId: "store",
               summary: "Configuración de tienda actualizada",
             },
-          }),
-          markPublication(db, "settings"),
-        ]);
+          });
+          await markPublication(tx, "settings");
+        });
         await publishAndInvalidate("settings");
         return Response.json({ ok: true });
       }
@@ -496,18 +524,27 @@ async function handler(req: Request, context: Context) {
             );
           return Response.json({ ok: true, unchanged: true });
         }
-        const operation = id
-          ? model.update({ where: { id }, data })
-          : model.create({ data });
-        await db.$transaction([
-          operation,
-          db.audit.create({
+        await transaction(async (tx) => {
+          if (resource !== "coupons") {
+            await lockMediaReferences(tx);
+            await validateMediaReferences(tx, data);
+          }
+          const txModel = {
+            products: tx.product,
+            categories: tx.category,
+            pages: tx.page,
+            coupons: tx.coupon,
+          }[resource as keyof typeof schemas] as unknown as typeof model;
+          const saved = id
+            ? await txModel.update({ where: { id }, data })
+            : await txModel.create({ data });
+          await tx.audit.create({
             data: {
               actor: actor.email,
               action:
                 method === "DELETE" ? "ARCHIVE" : id ? "UPDATE" : "CREATE",
               entity: resource,
-              entityId: id || "new",
+              entityId: saved.id,
               summary: String(
                 data.name ||
                   data.title ||
@@ -516,13 +553,13 @@ async function handler(req: Request, context: Context) {
                   resource,
               ),
             },
-          }),
-          ...(resource === "coupons"
-            ? []
-            : [
-                markPublication(db, resource === "pages" ? "pages" : "catalog"),
-              ]),
-        ]);
+          });
+          if (resource !== "coupons")
+            await markPublication(
+              tx,
+              resource === "pages" ? "pages" : "catalog",
+            );
+        });
         if (resource !== "coupons")
           await publishAndInvalidate(
             resource === "pages" ? "pages" : "catalog",
