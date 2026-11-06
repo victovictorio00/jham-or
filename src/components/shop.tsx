@@ -116,7 +116,7 @@ export function Header({ brand }: { brand: string }) {
         </button>
         <Link href="/" className="wordmark" aria-label={`${brand}, inicio`}>
           {brand}
-          <small>MUEBLES & DISEÑO</small>
+          <small>INTERIORES & MOBILIARIO</small>
         </Link>
         <nav
           className={open ? "nav open" : "nav"}

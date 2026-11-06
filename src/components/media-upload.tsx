@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Upload } from "lucide-react";
+import { Upload, X, ImagePlus } from "lucide-react";
 export type MediaItem = {
   id: string;
   url: string;
@@ -26,6 +26,7 @@ export function MediaUpload({
 }) {
   const router = useRouter();
   const sequence = useRef(0);
+  const [dragging, setDragging] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]),
     [busy, setBusy] = useState(false),
     [message, setMessage] = useState("");
@@ -169,6 +170,43 @@ export function MediaUpload({
       setBusy(false);
     }
   };
+  const addFiles = (files: File[]) => {
+    if (busy) return;
+    const remaining = tasks.filter((task) => task.state !== "Guardada");
+    const unique = files.filter(
+      (file, index) =>
+        !remaining.some(
+          (task) =>
+            task.file.name === file.name &&
+            task.file.size === file.size &&
+            task.file.lastModified === file.lastModified,
+        ) &&
+        !files
+          .slice(0, index)
+          .some(
+            (previous) =>
+              previous.name === file.name &&
+              previous.size === file.size &&
+              previous.lastModified === file.lastModified,
+          ),
+    );
+    if (remaining.length + unique.length > 20) {
+      setMessage(
+        "Puedes reunir hasta 20 fotos. Quita alguna o sube el lote actual antes de añadir más.",
+      );
+      return;
+    }
+    setMessage("");
+    setTasks([
+      ...remaining,
+      ...unique.map((file) => ({
+        id: sequence.current++,
+        file,
+        state: "Pendiente" as const,
+        progress: 0,
+      })),
+    ]);
+  };
   return (
     <form
       className="media-upload"
@@ -177,45 +215,76 @@ export function MediaUpload({
         void run(tasks.filter((task) => task.state !== "Guardada"));
       }}
     >
-      <label>
-        Subir imágenes (hasta 20 fotos · JPG, PNG, WebP o AVIF · 5 MB por foto)
+      <label
+        className={`upload-dropzone${dragging ? " is-dragging" : ""}${busy ? " is-busy" : ""}`}
+        onDragOver={(event) => {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = busy ? "none" : "copy";
+          if (!busy) setDragging(true);
+        }}
+        onDragLeave={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node))
+            setDragging(false);
+        }}
+        onDrop={(event) => {
+          event.preventDefault();
+          setDragging(false);
+          addFiles(Array.from(event.dataTransfer.files));
+        }}
+      >
+        <ImagePlus size={30} strokeWidth={1.3} />
+        <strong>
+          {dragging
+            ? "Suelta aquí tu grupo de fotos"
+            : "Arrastra tus fotos aquí"}
+        </strong>
+        <span>Puedes añadir varios grupos o seleccionarlas juntas.</span>
+        <span className="upload-browse">Seleccionar fotos</span>
+        <small>Hasta 20 fotos · JPG, PNG, WebP o AVIF · 5 MB por foto</small>
         <input
+          className="upload-file-input"
           type="file"
           name="file"
+          aria-label="Seleccionar imágenes"
           multiple
           accept="image/jpeg,image/png,image/webp,image/avif"
           disabled={busy}
           onChange={(event) => {
-            const files = Array.from(event.target.files || []);
-            if (files.length > 20) {
-              setMessage("Selecciona hasta 20 imágenes por lote.");
-              setTasks([]);
-              event.target.value = "";
-              return;
-            }
-            setMessage("");
-            setTasks(
-              files.map((file) => ({
-                id: sequence.current++,
-                file,
-                state: "Pendiente",
-                progress: 0,
-              })),
-            );
+            addFiles(Array.from(event.target.files || []));
+            event.target.value = "";
           }}
         />
       </label>
-      <button
-        className="button"
-        disabled={busy || !tasks.some((task) => task.state !== "Guardada")}
-      >
-        <Upload size={17} />
-        {busy
-          ? "Subiendo imágenes…"
-          : tasks.some((task) => task.state === "Error")
-            ? "Reintentar pendientes"
-            : "Subir imágenes"}
-      </button>
+      <div className="upload-actions">
+        <p>
+          {tasks.length
+            ? `${tasks.length} ${tasks.length === 1 ? "foto en el lote" : "fotos en el lote"}`
+            : "Selecciona o arrastra un grupo para comenzar."}
+        </p>
+        <button
+          className="button"
+          disabled={busy || !tasks.some((task) => task.state !== "Guardada")}
+        >
+          <Upload size={17} />
+          {busy
+            ? "Subiendo imágenes…"
+            : tasks.some((task) => task.state === "Error")
+              ? "Reintentar pendientes"
+              : "Subir imágenes"}
+        </button>
+        {tasks.length > 0 && !busy && (
+          <button
+            type="button"
+            className="text-button"
+            onClick={() => {
+              setTasks([]);
+              setMessage("");
+            }}
+          >
+            Vaciar selección
+          </button>
+        )}
+      </div>
       {tasks.length > 0 && (
         <ul className="upload-queue" aria-label="Progreso de imágenes">
           {tasks.map((task) => (
@@ -223,7 +292,11 @@ export function MediaUpload({
               <span>{task.file.name}</span>
               <span>
                 {task.state}
-                {task.state === "Subiendo" ? ` ${task.progress}%` : ""}
+                {task.state === "Subiendo"
+                  ? task.progress === 100
+                    ? " · Guardando…"
+                    : ` ${task.progress}%`
+                  : ""}
               </span>
               {task.state === "Subiendo" && (
                 <progress
@@ -231,6 +304,20 @@ export function MediaUpload({
                   value={task.progress}
                   aria-label={`Progreso de ${task.file.name}`}
                 />
+              )}
+              {!busy && task.state !== "Guardada" && (
+                <button
+                  className="icon-button upload-remove"
+                  type="button"
+                  aria-label={`Quitar ${task.file.name}`}
+                  onClick={() =>
+                    setTasks((current) =>
+                      current.filter((item) => item.id !== task.id),
+                    )
+                  }
+                >
+                  <X size={16} />
+                </button>
               )}
               {task.error && <small role="alert">{task.error}</small>}
             </li>

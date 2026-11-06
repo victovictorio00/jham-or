@@ -45,6 +45,8 @@ Fecha de esta serie documental: **5 de noviembre de 2026**. Referencia del códi
 | JF-27 | [Miniaturas y selector de portada](JF-27-miniaturas-y-selector-de-portada.md) | Vista previa pequeña y actualización de biblioteca sin recargar el formulario. |
 | JF-28 | [Consultas y caché de administración](JF-28-consultas-y-cache-de-administracion.md) | Lecturas reutilizadas, invalidación por cambios, permisos actuales y precarga privada retirada. |
 | JF-29 | [Subida múltiple y optimización de imágenes](JF-29-subida-multiple-y-optimizacion-de-imagenes.md) | Lotes de fotos, compresión en segundo plano, progreso, concurrencia y reintentos. |
+| JF-30 | [Diseño editorial e identidad visual](JF-30-diseno-editorial-e-identidad-visual.md) | Paleta, tipografías locales, portada, colecciones y adaptación de toda la tienda. |
+| JF-31 | [Arrastre de grupos y subida sin recompresión](JF-31-arrastre-de-grupos-y-subida-sin-recompresion.md) | Selección acumulativa, arrastre, cola editable y vía rápida de WebP validado. |
 
 ## Rutas de lectura sugeridas
 
@@ -56,7 +58,7 @@ Fecha de esta serie documental: **5 de noviembre de 2026**. Referencia del códi
 
 ## Cómo continuar el historial
 
-El próximo número disponible es **JF-30**. Crea `JF-30-titulo-descriptivo.md`, explica el cambio con sus motivos y evidencias y añade su fila a este índice. No renumeres los documentos existentes para insertar un tema nuevo.
+El próximo número disponible es **JF-32**. Crea `JF-32-titulo-descriptivo.md`, explica el cambio con sus motivos y evidencias y añade su fila a este índice. No renumeres los documentos existentes para insertar un tema nuevo.
 
 Una evolución posterior se documenta con otro número y un enlace al antecedente. Los datos comerciales del panel mantienen su auditoría en la aplicación; no se ha instalado un generador automático de Markdown por cada producto editado.
 

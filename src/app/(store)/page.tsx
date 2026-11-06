@@ -16,62 +16,87 @@ export default async function Home() {
     catalog(),
     categories(),
   ]);
+  const selection = products.toSorted(
+    (a, b) => Number(b.featured) - Number(a.featured),
+  );
   return (
     <>
-      <section className="hero">
-        <Image
-          className="hero-photo"
-          src={s.heroImage || "/images/hero.webp"}
-          alt="Sala luminosa con muebles en tonos naturales y detalles de madera"
-          fill
-          sizes="100vw"
-          priority
-        />
-        <div className="hero-shade" />
+      <section className="hero" aria-label="La colección Jham-or">
         <div className="hero-copy">
-          <p className="eyebrow light">DISEÑO QUE SE SIENTE</p>
+          <p className="eyebrow">
+            <span className="editorial-rule" />
+            EL ARTE DE HABITAR
+          </p>
           <h1>
             {s.heroTitle.split("\n").map((line, i) => (
-              <span key={i}>
-                {line}
-                <br />
-              </span>
+              <span key={i}>{line}</span>
             ))}
           </h1>
           <p>{s.heroText}</p>
-          <Link href="/productos" className="button light-button">
-            Descubre la colección <ArrowUpRight size={20} />
+          <Link href="/productos" className="button">
+            Descubre la colección <ArrowUpRight size={18} />
           </Link>
           <div className="hero-foot">
-            Materiales nobles. Formas esenciales. Tu hogar.
+            <span className="hero-seal" aria-hidden="true">
+              J.
+            </span>
+            <span>
+              Muebles con carácter.
+              <br />
+              <strong>Espacios que se sienten propios.</strong>
+            </span>
           </div>
         </div>
-        <div className="hero-caption">01 — La calidez de lo esencial</div>
+        <div className="hero-visual">
+          <Image
+            className="hero-photo"
+            src={s.heroImage || "/images/hero.webp"}
+            alt="Sala luminosa con muebles en tonos naturales y detalles de madera"
+            fill
+            sizes="(max-width:850px) 100vw, 58vw"
+            priority
+          />
+          <div className="hero-image-note">
+            <span>LA BELLEZA DE LO COTIDIANO</span>
+            <span>
+              Diseño para vivirlo <ArrowUpRight size={17} />
+            </span>
+          </div>
+        </div>
+        <div className="hero-edition" aria-hidden="true">
+          JHAM-OR / OBJETOS PARA EL HOGAR
+        </div>
       </section>
       <div className="value-strip">
         <span>
-          <Leaf size={19} /> Materiales que perduran
+          <Leaf size={18} />
+          Materiales que perduran
         </span>
         <span>
-          <Armchair size={19} /> Diseño para la vida real
+          <Armchair size={18} />
+          Diseño para la vida real
         </span>
         <span>
-          <Truck size={19} /> Entregas coordinadas
+          <Truck size={18} />
+          Entregas coordinadas
         </span>
         <span>
-          <HeartHandshake size={19} /> Atención cercana
+          <HeartHandshake size={18} />
+          Atención cercana
         </span>
       </div>
-      <section className="section">
+      <section className="section spaces-section">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">CADA RINCÓN, UNA HISTORIA</p>
-            <h2>Un hogar, muchas formas de vivir.</h2>
+            <p className="eyebrow">01 / UNIVERSOS JHAM-OR</p>
+            <h2>
+              Una nueva mirada
+              <br />a tu <em>espacio.</em>
+            </h2>
           </div>
           <p>
-            Piezas que encuentran su lugar.
-            <br />
-            Espacios que hablan de ti.
+            Encuentra el equilibrio entre lo que amas
+            <br />y la forma en que vives.
           </p>
         </div>
         <div className="category-grid">
@@ -82,17 +107,20 @@ export default async function Home() {
               key={cat.id}
               prefetch={false}
             >
-              <Image
-                src={cat.image || "/images/room.webp"}
-                alt={`Muebles de ${cat.name.toLowerCase()}`}
-                fill
-                sizes="(max-width: 700px) 90vw, 30vw"
-              />
-              <div>
-                <small>0{i + 1} / COLECCIÓN</small>
+              <div className="category-photo">
+                <Image
+                  src={cat.image || "/images/room.webp"}
+                  alt={`Muebles de ${cat.name.toLowerCase()}`}
+                  fill
+                  sizes="(max-width:600px) 88vw, (max-width:850px) 45vw, 30vw"
+                />
+                <span className="category-index">0{i + 1}</span>
+              </div>
+              <div className="category-title">
+                <small>EL PLACER DE ESTAR</small>
                 <h3>
                   {cat.name}
-                  <ArrowUpRight size={26} />
+                  <ArrowUpRight size={24} />
                 </h3>
               </div>
             </Link>
@@ -102,51 +130,111 @@ export default async function Home() {
       <section className="section collection-section">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">NUESTRA SELECCIÓN</p>
-            <h2>Piezas para quedarse.</h2>
+            <p className="eyebrow">02 / PIEZAS SELECCIONADAS</p>
+            <h2>
+              El detalle hace
+              <br />
+              la <em>diferencia.</em>
+            </h2>
           </div>
           <Link href="/productos" className="text-link">
             Ver toda la colección <ArrowUpRight size={18} />
           </Link>
         </div>
         <div className="product-grid">
-          {products.slice(0, 6).map((p) => (
+          {selection.slice(0, 6).map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
         </div>
       </section>
-      <section className="essence">
+      <section className="essence home-essence">
         <div className="essence-photo">
           <Image
             src="/images/room.webp"
             alt="Un espacio sereno con materiales naturales y muebles de madera"
             fill
-            sizes="(max-width: 800px) 100vw, 50vw"
+            sizes="(max-width:850px) 100vw, 50vw"
           />
+          <span className="photo-credit">TEXTURAS, LUZ Y EQUILIBRIO</span>
         </div>
         <div className="essence-copy">
-          <p className="eyebrow">LA ESENCIA JHAM-OR</p>
+          <p className="eyebrow">03 / NUESTRA ESENCIA</p>
+          <span className="essence-monogram" aria-hidden="true">
+            J.
+          </span>
           <h2>
             Lo extraordinario
             <br />
-            está en lo cotidiano.
+            está en lo <em>cotidiano.</em>
           </h2>
           <p>{s.about}</p>
           <Link className="text-link" href="/nosotros">
-            Conoce nuestra historia <ArrowRight size={18} />
+            La filosofía Jham-or <ArrowRight size={18} />
           </Link>
           <div className="signature">
             Hecho para habitar. Pensado para durar.
           </div>
         </div>
       </section>
-      <section className="section invitation">
-        <p className="eyebrow">TU PRÓXIMO ESPACIO EMPIEZA AQUÍ</p>
-        <h2>Hagamos lugar a lo que importa.</h2>
-        <p>Encuentra tu próxima pieza o conversemos sobre lo que imaginas.</p>
-        <Link href="/contacto" className="button">
-          Conversemos <ArrowUpRight size={18} />
-        </Link>
+      <section
+        className="section design-notes"
+        aria-label="Nuestra forma de entender el diseño"
+      >
+        <div>
+          <p className="eyebrow">DISEÑO CON INTENCIÓN</p>
+          <h2>
+            La elegancia
+            <br />
+            que se <em>siente.</em>
+          </h2>
+          <Link href="/productos" className="text-link">
+            Encuentra tu pieza <ArrowUpRight size={18} />
+          </Link>
+        </div>
+        <div className="design-note-list">
+          {[
+            [
+              "01",
+              "Formas en equilibrio",
+              "Líneas serenas y proporciones que conviven con tu forma de habitar.",
+            ],
+            [
+              "02",
+              "Texturas con carácter",
+              "La calidez de la madera, los tejidos y los detalles que dan vida a cada ambiente.",
+            ],
+            [
+              "03",
+              "Una elección personal",
+              "Te acompañamos a elegir medidas y acabados para encontrar tu lugar.",
+            ],
+          ].map(([number, title, text]) => (
+            <article key={number}>
+              <span>{number}</span>
+              <div>
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="invitation">
+        <div>
+          <p className="eyebrow">HAGAMOS ESPACIO PARA LO QUE IMPORTA</p>
+          <h2>
+            Tu próximo capítulo,
+            <br />
+            <em>en casa.</em>
+          </h2>
+          <p>Conversemos sobre ese espacio que imaginas.</p>
+          <Link href="/contacto" className="button light-button">
+            Conversemos <ArrowUpRight size={18} />
+          </Link>
+        </div>
+        <span className="invitation-mark" aria-hidden="true">
+          J.
+        </span>
       </section>
     </>
   );

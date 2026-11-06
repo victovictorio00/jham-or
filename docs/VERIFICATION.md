@@ -1,3 +1,28 @@
+# Diseño editorial y arrastre de fotos — 6 de noviembre de 2026
+
+La tienda adopta una identidad marfil, nogal y bronce con tipografías Cormorant Garamond y Manrope servidas localmente. Se rediseñaron la portada, las colecciones, los productos, las secciones editoriales, el cierre y el pie de página; la identidad también se aplica a las páginas interiores y los formularios.
+
+La biblioteca admite arrastrar grupos de fotografías, acumular selecciones y quitar archivos antes de enviarlos. El servidor conserva WebP adecuados después de validarlos y decodificarlos, evitando comprimir dos veces los originales ya preparados.
+
+- TypeScript y 10 pruebas unitarias aprobadas.
+- 16 pruebas de navegador aprobadas, incluyendo arrastre de dos fotos, incorporación de una tercera por selector, concurrencia, fallo parcial, reintento y comprobación de bytes sin recompresión.
+- 35 vistas comprobadas: siete rutas a 360, 390, 768, 1024 y 1440 px; respuesta correcta, un título principal y ningún desbordamiento.
+- Cero errores JavaScript y cero solicitudes a dominios externos en el verificador visual. Las fuentes no se descargan de Google durante la navegación.
+- Misma fotografía preparada de 161.252 bytes y tres repeticiones locales: mediana de subida de 227,4 ms antes y 93,3 ms después. El procesamiento pasó de 209,2 ms a 70,7 ms de mediana. Se excluye la preparación del navegador y la velocidad de internet; estas cifras no garantizan tiempos para cualquier conexión.
+- El original sin preparar sigue la conversión normal. Un falso WebP se rechaza con 400. Los WebP conservados siguen teniendo miniatura de 360 px y las mismas protecciones al eliminarlos.
+
+Evidencias: [revisión visual](design-verification.json), [medición de subidas](design-upload-verification.json), [portada en escritorio](design-home-1440.png), [portada móvil](design-home-390.png), [catálogo](design-catalog-1440.png), [ficha](design-product-1440.png) y [selección de grupos](admin-upload-groups.png).
+
+Publicado con copia de seguridad previa y servicio saludable. En el dominio real se comprobaron la composición de escritorio y móvil, las fuentes locales, el favicon y el arrastre acumulativo de tres fotos; se vació la selección sin enviar imágenes de prueba. [Informe de producción](editorial-production-verification.json).
+
+La medición posterior completó 105 respuestas HTML públicas, incluida una búsqueda inédita, con **0 consultas SQL públicas adicionales**. [Resultado SQL/HTTP](performance.json).
+
+Imagen publicada: `sha256:538fe36499885e45a05f82e7de8a90fc06700bd7327cb60d45f989497e2f5dbb`. El único ajuste entre la imagen de las pruebas de navegador y la final fue el color del favicon; se validó su SVG y se comprobó el recurso publicado.
+
+Decisiones y fuentes: [JF-30](historial/JF-30-diseno-editorial-e-identidad-visual.md) y [JF-31](historial/JF-31-arrastre-de-grupos-y-subida-sin-recompresion.md).
+
+Los resultados siguientes corresponden a las entregas anteriores.
+
 # Verificación de consultas y subidas — 6 de noviembre de 2026
 
 Publicado en https://jhamor.purprum.com con selección múltiple de hasta 20 fotos, compresión mediante trabajador, dos transferencias simultáneas, progreso y reintento por archivo. Las listas administrativas se reutilizan hasta que cambian y se han retirado las precargas de pantallas privadas.

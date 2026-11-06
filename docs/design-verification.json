@@ -1,0 +1,253 @@
+{
+  "at": "2026-11-06T04:27:16.201Z",
+  "base": "http://localhost:3012",
+  "views": [
+    {
+      "width": 360,
+      "path": "/",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 360,
+      "path": "/productos",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 360,
+      "path": "/productos/sofa-olivo",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 360,
+      "path": "/nosotros",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 360,
+      "path": "/contacto",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 360,
+      "path": "/auth/registro",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 360,
+      "path": "/carrito",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 390,
+      "path": "/",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 390,
+      "path": "/productos",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 390,
+      "path": "/productos/sofa-olivo",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 390,
+      "path": "/nosotros",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 390,
+      "path": "/contacto",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 390,
+      "path": "/auth/registro",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 390,
+      "path": "/carrito",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 768,
+      "path": "/",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 768,
+      "path": "/productos",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 768,
+      "path": "/productos/sofa-olivo",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 768,
+      "path": "/nosotros",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 768,
+      "path": "/contacto",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 768,
+      "path": "/auth/registro",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 768,
+      "path": "/carrito",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 1024,
+      "path": "/",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 1024,
+      "path": "/productos",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 1024,
+      "path": "/productos/sofa-olivo",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 1024,
+      "path": "/nosotros",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 1024,
+      "path": "/contacto",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 1024,
+      "path": "/auth/registro",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 1024,
+      "path": "/carrito",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 1440,
+      "path": "/",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 1440,
+      "path": "/productos",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 1440,
+      "path": "/productos/sofa-olivo",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 1440,
+      "path": "/nosotros",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 1440,
+      "path": "/contacto",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 1440,
+      "path": "/auth/registro",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    },
+    {
+      "width": 1440,
+      "path": "/carrito",
+      "status": 200,
+      "overflow": false,
+      "h1": 1
+    }
+  ],
+  "javascriptErrors": [],
+  "externalRequests": []
+}

@@ -1,7 +1,31 @@
+import localFont from "next/font/local";
+import "../storefront.css";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Header } from "@/components/shop";
 import { settings } from "@/lib/catalog";
+const editorial = localFont({
+  src: [
+    {
+      path: "../../../public/fonts/cormorant-normal-400.woff2",
+      weight: "400 500",
+      style: "normal",
+    },
+    {
+      path: "../../../public/fonts/cormorant-italic-400.woff2",
+      weight: "400",
+      style: "italic",
+    },
+  ],
+  variable: "--font-editorial",
+  display: "swap",
+});
+const modern = localFont({
+  src: "../../../public/fonts/manrope-normal-400.woff2",
+  weight: "400 600",
+  variable: "--font-modern",
+  display: "swap",
+});
 export const revalidate = false;
 export default async function StoreLayout({
   children,
@@ -10,13 +34,22 @@ export default async function StoreLayout({
 }) {
   const s = await settings();
   return (
-    <>
+    <div className={`storefront ${editorial.variable} ${modern.variable}`}>
       <a href="#contenido" className="skip-link">
         Saltar al contenido
       </a>
       <Header brand={s.brand} />
       <main id="contenido">{children}</main>
       <footer className="footer">
+        <div className="footer-heading">
+          <p className="eyebrow">JHAM-OR · MUEBLES & DISEÑO</p>
+          <p>
+            Diseño que habita <em>contigo.</em>
+          </p>
+          <Link href="/productos" className="text-link">
+            Explora la colección <ArrowUpRight size={18} />
+          </Link>
+        </div>
         <div className="footer-main">
           <div>
             <Link href="/" className="wordmark">
@@ -77,6 +110,6 @@ export default async function StoreLayout({
           </div>
         </div>
       </footer>
-    </>
+    </div>
   );
 }

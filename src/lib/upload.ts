@@ -42,7 +42,25 @@ export async function uploadImage(req: Request) {
   mark("queue");
   try {
     let decoded;
+    let reusable = false;
     try {
+      const metadata = await sharp(bytes, {
+        limitInputPixels: 25000000,
+        animated: false,
+      }).metadata();
+      reusable =
+        metadata.format === "webp" &&
+        Boolean(
+          metadata.width &&
+            metadata.width <= 1600 &&
+            metadata.height &&
+            metadata.height <= 1600,
+        ) &&
+        (!metadata.orientation || metadata.orientation === 1) &&
+        !metadata.exif &&
+        !metadata.xmp &&
+        !metadata.iptc &&
+        (!metadata.pages || metadata.pages === 1);
       decoded = await sharp(bytes, {
         limitInputPixels: 25000000,
         animated: false,
@@ -61,7 +79,9 @@ export async function uploadImage(req: Request) {
       channels: decoded.info.channels,
     };
     const [output, thumbnail] = await Promise.all([
-      sharp(decoded.data, { raw }).webp({ quality: 82 }).toBuffer(),
+      reusable
+        ? Promise.resolve(bytes)
+        : sharp(decoded.data, { raw }).webp({ quality: 82 }).toBuffer(),
       sharp(decoded.data, { raw })
         .resize(360, 360, { fit: "inside", withoutEnlargement: true })
         .webp({ quality: 75 })
@@ -99,6 +119,7 @@ export async function uploadImage(req: Request) {
         headers: {
           "Cache-Control": "private, no-store",
           "Server-Timing": timing.join(", "),
+          "X-Image-Processing": reusable ? "validated-webp" : "converted-webp",
         },
       });
     } catch (error) {

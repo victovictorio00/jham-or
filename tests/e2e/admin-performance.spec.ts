@@ -17,7 +17,7 @@ async function login(page: any) {
     .click();
   await expect(page).toHaveURL("/admin/media");
 }
-test("multiple photos compress before transfer, bound concurrency and retry only failed uploads", async ({
+test("groups of photos drop and accumulate, compress before transfer and retry only failures", async ({
   page,
 }) => {
   await login(page);
@@ -55,11 +55,32 @@ test("multiple photos compress before transfer, bound concurrency and retry only
     )
       rsc++;
   });
+  const transfer = await page.evaluateHandle(
+    ({ base64, names }) => {
+      const data = new DataTransfer();
+      const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+      for (const name of names)
+        data.items.add(new File([bytes], name, { type: "image/png" }));
+      return data;
+    },
+    { base64: buffer.toString("base64"), names: names.slice(0, 2) },
+  );
+  const zone = page.locator(".upload-dropzone");
+  await zone.dispatchEvent("dragover", { dataTransfer: transfer });
+  await expect(zone).toHaveClass(/is-dragging/);
+  await zone.dispatchEvent("drop", { dataTransfer: transfer });
+  await expect(zone).not.toHaveClass(/is-dragging/);
   await page
     .locator("input[type=file]")
-    .setInputFiles(
-      names.map((name) => ({ name, mimeType: "image/png", buffer })),
-    );
+    .setInputFiles({ name: names[2], mimeType: "image/png", buffer });
+  await expect(page.locator(".upload-queue li")).toHaveCount(3);
+  await expect(
+    page.getByText("3 fotos en el lote", { exact: true }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: "docs/admin-upload-groups.png",
+    fullPage: true,
+  });
   await page
     .getByRole("button", { name: "Subir imágenes", exact: true })
     .click();
@@ -116,6 +137,7 @@ test("cached media list invalidates on writes and never bypasses current permiss
     },
   });
   expect(response.status()).toBe(201);
+  expect(response.headers()["x-image-processing"]).toBe("converted-webp");
   expect(response.headers()["server-timing"]).toContain("process;dur=");
   const image = await response.json();
   await page.reload();
@@ -125,6 +147,43 @@ test("cached media list invalidates on writes and never bypasses current permiss
   );
   await page.reload();
   await expect(page.getByRole("article", { name, exact: true })).toHaveCount(0);
+  const prepared = await sharp({
+    create: { width: 960, height: 640, channels: 3, background: "#c3a888" },
+  })
+    .webp({ quality: 82 })
+    .toBuffer();
+  const fast = await admin.post("/api/admin/upload", {
+    multipart: {
+      file: {
+        name: "qa-prepared.webp",
+        mimeType: "image/webp",
+        buffer: prepared,
+      },
+    },
+  });
+  expect(fast.status()).toBe(201);
+  expect(fast.headers()["x-image-processing"]).toBe("validated-webp");
+  const ready = await fast.json();
+  expect((await (await admin.get(ready.url)).body()).equals(prepared)).toBe(
+    true,
+  );
+  expect(
+    (await sharp(await (await admin.get(ready.thumbnailUrl)).body()).metadata())
+      .width,
+  ).toBe(360);
+  expect((await admin.delete("/api/admin/media/" + ready.id)).status()).toBe(
+    200,
+  );
+  const invalid = await admin.post("/api/admin/upload", {
+    multipart: {
+      file: {
+        name: "invalid.webp",
+        mimeType: "image/webp",
+        buffer: Buffer.from("not an image"),
+      },
+    },
+  });
+  expect(invalid.status()).toBe(400);
   const user = await db.user.findUniqueOrThrow({
     where: { email: process.env.ADMIN_EMAIL },
   });
