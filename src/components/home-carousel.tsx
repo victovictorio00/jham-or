@@ -1,17 +1,16 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 export function HomeCarousel({ images }: { images: string[] }) {
   const slides = [...new Set(images.filter(Boolean))].slice(0, 8);
   const [ready, setReady] = useState(false);
   const [index, setIndex] = useState(0),
-    [paused, setPaused] = useState(false),
-    [hovered, setHovered] = useState(false),
+    [dragging, setDragging] = useState(false),
     [focused, setFocused] = useState(false),
     [reduced, setReduced] = useState(true),
     [visible, setVisible] = useState(true);
-  const touch = useRef<number | null>(null);
+  const pointer = useRef<{ id: number; x: number; y: number } | null>(null);
   useEffect(
     () =>
       setIndex((current) => Math.min(current, Math.max(0, slides.length - 1))),
@@ -31,8 +30,7 @@ export function HomeCarousel({ images }: { images: string[] }) {
   }, []);
   useEffect(() => {
     if (
-      paused ||
-      hovered ||
+      dragging ||
       focused ||
       reduced ||
       !visible ||
@@ -40,35 +38,63 @@ export function HomeCarousel({ images }: { images: string[] }) {
       slides.length < 2
     )
       return;
-    const timer = setInterval(
+    const timer = setTimeout(
       () => setIndex((current) => (current + 1) % slides.length),
       6000,
     );
-    return () => clearInterval(timer);
-  }, [paused, hovered, focused, reduced, visible, ready, slides.length]);
+    return () => clearTimeout(timer);
+  }, [index, dragging, focused, reduced, visible, ready, slides.length]);
   const go = (next: number) => setIndex((next + slides.length) % slides.length);
   if (!slides.length) return null;
   return (
     <section
-      className="home-carousel"
+      className={`home-carousel${dragging ? " is-dragging" : ""}`}
       aria-label="Carrusel de portada"
       aria-roledescription="carrusel"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onFocusCapture={() => setFocused(true)}
+      onFocusCapture={(event) =>
+        setFocused((event.target as HTMLElement).matches(":focus-visible"))
+      }
       onBlurCapture={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget as Node))
           setFocused(false);
       }}
-      onTouchStart={(event) => {
-        touch.current = event.touches[0].clientX;
+      onPointerDown={(event) => {
+        if (
+          !event.isPrimary ||
+          event.button !== 0 ||
+          slides.length < 2 ||
+          (event.target as HTMLElement).closest("button")
+        )
+          return;
+        pointer.current = {
+          id: event.pointerId,
+          x: event.clientX,
+          y: event.clientY,
+        };
+        event.currentTarget.setPointerCapture(event.pointerId);
+        setDragging(true);
       }}
-      onTouchEnd={(event) => {
-        if (touch.current === null) return;
-        const delta = event.changedTouches[0].clientX - touch.current;
-        touch.current = null;
-        if (Math.abs(delta) > 45) go(index + (delta < 0 ? 1 : -1));
+      onPointerUp={(event) => {
+        const start = pointer.current;
+        if (!start || start.id !== event.pointerId) return;
+        pointer.current = null;
+        setDragging(false);
+        const dx = event.clientX - start.x;
+        const dy = event.clientY - start.y;
+        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy))
+          go(index + (dx < 0 ? 1 : -1));
+        if (event.currentTarget.hasPointerCapture(event.pointerId))
+          event.currentTarget.releasePointerCapture(event.pointerId);
       }}
+      onPointerCancel={() => {
+        pointer.current = null;
+        setDragging(false);
+      }}
+      onLostPointerCapture={() => {
+        pointer.current = null;
+        setDragging(false);
+      }}
+      onDragStart={(event) => event.preventDefault()}
       onKeyDown={(event) => {
         if (event.key === "ArrowRight") {
           event.preventDefault();
@@ -94,6 +120,7 @@ export function HomeCarousel({ images }: { images: string[] }) {
             i === index ||
             (ready && i === (index + 1) % slides.length)) && (
             <Image
+              draggable={false}
               onLoad={() => setReady(true)}
               src={src}
               alt={`Colección Jham-or, ambiente ${i + 1}`}
@@ -142,13 +169,6 @@ export function HomeCarousel({ images }: { images: string[] }) {
               {String(index + 1).padStart(2, "0")} /{" "}
               {String(slides.length).padStart(2, "0")}
             </span>
-            <button
-              type="button"
-              aria-label={paused ? "Reanudar carrusel" : "Pausar carrusel"}
-              onClick={() => setPaused(!paused)}
-            >
-              {paused ? <Play size={15} /> : <Pause size={15} />}
-            </button>
           </div>
         </>
       )}

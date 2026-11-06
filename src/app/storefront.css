@@ -1425,7 +1425,12 @@
   background: #e9e1d6;
   overflow: hidden;
   touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
   isolation: isolate;
+}
+.home-carousel.is-dragging {
+  cursor: grabbing;
 }
 .carousel-slide {
   position: absolute;
@@ -1485,14 +1490,6 @@
   font-size: 9px;
   letter-spacing: 0.08em;
   white-space: nowrap;
-}
-.carousel-controls > button {
-  background: none;
-  border: 0;
-  color: inherit;
-  padding: 5px;
-  display: grid;
-  place-items: center;
 }
 .carousel-dots {
   display: flex;

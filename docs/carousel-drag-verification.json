@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-06T23:55:53.308Z",
+  "base": "https://jhamor.purprum.com",
+  "noPauseControl": true,
+  "mouseDrag": true,
+  "reverseMouseDrag": true,
+  "smallMovementIgnored": true,
+  "automaticWhileHovered": true,
+  "automaticAfterArrowClick": true,
+  "touchSwipe": true,
+  "verticalGestureIgnored": true,
+  "reducedMotionRespected": true,
+  "apiRequests": 0,
+  "javascriptErrors": []
+}

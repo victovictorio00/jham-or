@@ -49,7 +49,7 @@ Historial de cambios registra acciones de administración, incluyendo cambios de
 
 ## Carrusel de portada y variantes
 
-En **Diseño y tienda → Carrusel de portada**, añade de una a ocho imágenes de la biblioteca. Las flechas cambian el orden y la papelera quita la imagen del carrusel sin borrar el archivo. Guarda para publicar. La portada muestra únicamente las fotografías, con controles y avance automático; respeta la preferencia de movimiento reducido.
+En **Diseño y tienda → Carrusel de portada**, añade de una a ocho imágenes de la biblioteca. Las flechas cambian el orden y la papelera quita la imagen del carrusel sin borrar el archivo. Guarda para publicar. La portada muestra únicamente las fotografías, con flechas, indicadores y avance automático cada seis segundos. Se puede arrastrar con el mouse o deslizar en móvil; no tiene botón de pausa y respeta la preferencia de movimiento reducido.
 
 El enlace **Subir imágenes** abre la biblioteca en otra pestaña. Puedes arrastrar grupos de fotografías o acumular selecciones antes de subirlas. Al volver al formulario, **Actualizar biblioteca** realiza una sola petición y conserva lo que estás editando. Seleccionar una imagen ya disponible no consulta la API.
 

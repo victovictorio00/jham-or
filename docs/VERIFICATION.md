@@ -1,3 +1,13 @@
+# Carrusel automático y arrastre con el mouse — 7 de noviembre de 2026
+
+Retirado el botón de pausa/reanudación. El carrusel avanza cada seis segundos y sigue funcionando con el mouse encima. Se puede arrastrar horizontalmente con mouse, lápiz o pantalla táctil. Las flechas e indicadores permanecen y una selección manual reinicia el intervalo.
+
+Compilación de producción y TypeScript aprobados. El verificador específico pasó en QA y en `https://jhamor.purprum.com`: arrastre en ambos sentidos, movimiento pequeño sin cambio, avance automático con hover y después de hacer clic en una flecha, gesto táctil horizontal y gesto vertical sin cambiar la fotografía. También comprobó la preferencia de movimiento reducido, ausencia del botón de pausa, **0 peticiones API** y **0 errores JavaScript**. Las pruebas son de lectura; no crean datos comerciales.
+
+Imagen desplegada: `sha256:a31194bb53b60a528134a0cadc2f47e976c2aa12a1c069e469c5ff8f33b6c699`. Aplicación saludable tras el despliegue. No se modifican consultas, esquema ni dependencias. Las mediciones SQL y las regresiones comerciales de la entrega anterior no se volvieron a ejecutar para este cambio de interacción.
+
+Evidencias: [verificación del carrusel](carousel-drag-verification.json), [verificador](../scripts/verify-carousel-production.mjs) y [JF-37](historial/JF-37-carrusel-automatico-y-arrastre-con-el-mouse.md). Los informes siguientes corresponden a sus respectivas entregas anteriores.
+
 # Carrusel, navegación y variantes independientes — 6 de noviembre de 2026
 
 Publicados el carrusel de imágenes editable desde Diseño y tienda, los accesos rápidos de hasta seis productos por colección y las variantes con precio, stock y galería propios. Mi cuenta tiene una bienvenida amplia, accesos, pedidos y perfil adaptados a escritorio y móvil. Se retiró el bloque «Hagamos espacio para lo que importa / Tu próximo capítulo en casa» de la portada.
