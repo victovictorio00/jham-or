@@ -1,3 +1,4 @@
+import { fieldLabels } from "@/lib/field-errors";
 import { cookies } from "next/headers";
 import { z } from "zod";
 import { compare, hash as passwordHash } from "bcryptjs";
@@ -396,7 +397,10 @@ async function handler(req: Request, context: Context) {
           ? await db.user.findUnique({ where: { id } })
           : null;
         if (id && !previous) throw new AppError(404, "Usuario no encontrado.");
-        if (data.role !== "CUSTOMER" || previous?.role !== "CUSTOMER")
+        if (
+          data.role !== "CUSTOMER" ||
+          (previous && previous.role !== "CUSTOMER")
+        )
           await requireAdmin(true);
         if (id === actor.id && (data.role !== actor.role || !data.active))
           throw new AppError(400, "No puedes quitarte tu propio acceso.");
@@ -553,11 +557,30 @@ async function handler(req: Request, context: Context) {
     }
     throw new AppError(404, "Ruta no encontrada.");
   } catch (e) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002")
+    if (
+      e instanceof Prisma.PrismaClientKnownRequestError &&
+      e.code === "P2002"
+    ) {
+      const targets = Array.isArray(e.meta?.target)
+        ? (e.meta.target as string[])
+        : [];
+      const fieldErrors = Object.fromEntries(
+        targets
+          .filter((key) => fieldLabels[key])
+          .map((key) => [
+            key,
+            `Ya existe otro registro con este ${key === "sku" ? "código interno" : key === "slug" ? "enlace" : fieldLabels[key].toLowerCase()}. Usa uno diferente.`,
+          ]),
+      );
       return Response.json(
-        { error: "Ya existe un registro con ese correo, enlace o código." },
+        {
+          error:
+            "Ya existe un registro con esos datos. Revisa los campos señalados.",
+          fieldErrors,
+        },
         { status: 409 },
       );
+    }
     return failure(e);
   }
 }

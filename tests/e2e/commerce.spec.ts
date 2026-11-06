@@ -1,3 +1,4 @@
+import { chooseOption } from "../helpers/select";
 import { test, expect } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { randomUUID } from "node:crypto";
@@ -241,9 +242,9 @@ test("admin edits publish immediately and unchanged saves do not add audit recor
       ).toBeTruthy();
     }
   }
-  await page.goto('/admin/configuracion');
-  await page.getByRole('button',{name:'Guardar cambios'}).click();
-  await expect(page.getByText('No hay cambios nuevos.')).toBeVisible();
+  await page.goto("/admin/configuracion");
+  await page.getByRole("button", { name: "Guardar cambios" }).click();
+  await expect(page.getByText("No hay cambios nuevos.")).toBeVisible();
   await page.goto("/admin/productos?edit=new");
   await page.getByLabel("Nombre", { exact: true }).fill("Mueble QA publicado");
   await page.getByLabel("Enlace (slug)", { exact: true }).fill("qa-publicado");
@@ -251,14 +252,12 @@ test("admin edits publish immediately and unchanged saves do not add audit recor
     .getByLabel("Código interno / SKU", { exact: true })
     .fill("QA-PUBLICADO");
   const category = await db.category.findFirstOrThrow();
-  await page.getByLabel("Categoría", { exact: true }).selectOption(category.id);
+  await chooseOption(page, "Categoría", category.id);
   await page
     .getByLabel("Descripción", { exact: true })
     .fill("Mueble de comprobación");
   await page.getByLabel("Precio (S/)", { exact: true }).fill("199.90");
-  await page
-    .getByLabel("Imagen principal", { exact: true })
-    .selectOption("/images/chair.webp");
+  await chooseOption(page, "Imagen principal", "/images/chair.webp");
   await page.getByLabel("Material", { exact: true }).fill("Roble");
   await page
     .getByLabel("Medidas (ancho × fondo × alto)", { exact: true })
@@ -311,7 +310,7 @@ test("private order isolation, coupons, manufactured furniture and image uploads
     (await customer.post("/api/auth/register", { data: other })).status(),
   ).toBe(201);
   const oldOrder = await db.order.findFirstOrThrow({
-    where: { email: {not: other.email} },
+    where: { email: { not: other.email } },
   });
   expect(
     (await customer.get(`/mi-cuenta/pedidos/${oldOrder.id}`)).status(),
@@ -376,7 +375,11 @@ test("private order isolation, coupons, manufactured furniture and image uploads
       file: {
         name: "qa-pixel.png",
         mimeType: "image/png",
-        buffer: await sharp({create:{width:2,height:2,channels:3,background:"#ffffff"}}).png().toBuffer(),
+        buffer: await sharp({
+          create: { width: 2, height: 2, channels: 3, background: "#ffffff" },
+        })
+          .png()
+          .toBuffer(),
       },
     },
   });
@@ -389,12 +392,20 @@ test("private order isolation, coupons, manufactured furniture and image uploads
   const exported = await admin.get("/api/admin/export");
   expect(exported.status()).toBe(200);
   expect(exported.headers()["content-type"]).toContain("text/csv");
-  const settingBefore=await db.setting.findUniqueOrThrow({where:{key:'store'}});
-  const auditBefore=await db.audit.count();
-  const noChange=await admin.put('/api/admin/settings',{data:settingBefore.value});
+  const settingBefore = await db.setting.findUniqueOrThrow({
+    where: { key: "store" },
+  });
+  const auditBefore = await db.audit.count();
+  const noChange = await admin.put("/api/admin/settings", {
+    data: settingBefore.value,
+  });
   expect(noChange.status()).toBe(200);
   expect((await noChange.json()).unchanged).toBe(true);
-  expect((await db.setting.findUniqueOrThrow({where:{key:'store'}})).updatedAt.toISOString()).toBe(settingBefore.updatedAt.toISOString());
+  expect(
+    (
+      await db.setting.findUniqueOrThrow({ where: { key: "store" } })
+    ).updatedAt.toISOString(),
+  ).toBe(settingBefore.updatedAt.toISOString());
   expect(await db.audit.count()).toBe(auditBefore);
   await admin.dispose();
   await customer.dispose();

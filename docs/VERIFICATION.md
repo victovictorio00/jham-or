@@ -1,3 +1,27 @@
+# Creación, campos obligatorios y selectores — 6 de noviembre de 2026
+
+Corregida la creación desde Clientes y la autorización para que administradores creen cuentas de cliente. La creación o modificación de cuentas del equipo continúa reservada al propietario. El resto de los formularios de creación se ha comprobado de extremo a extremo.
+
+Los campos obligatorios muestran (*) y una leyenda. El enlace se propone al crear, las contraseñas iniciales se distinguen de las opcionales al editar y los errores se muestran junto a su campo sin perder los valores introducidos. Los nombres accesibles de los controles se conservan sin añadir el asterisco.
+
+Los desplegables tienen un diseño compartido, búsqueda local en listas largas, miniaturas de imágenes y manejo con teclado. La lista se sitúa dentro de la pantalla y su buscador toma el foco sin desplazar ni cerrar el menú.
+
+- TypeScript y **13 pruebas unitarias aprobadas**.
+- **17 pruebas de navegador aprobadas**: creación de muebles, categorías, páginas, cupones, clientes y equipo; errores, corrección y reintento; permisos; búsqueda y teclado; móvil; compra, stock, imágenes y publicación.
+- En el dominio real: formulario nuevo de cliente accesible, contraseña inicial obligatoria, asteriscos presentes, listas diseñadas y con miniaturas, búsqueda local y adaptación móvil.
+- Abrir o buscar en el selector de imágenes: **0 peticiones API**. Intentar guardar una creación vacía: **0 peticiones API** y mensajes de campos obligatorios.
+- Comprobación del selector de portada: 0 peticiones API al elegir y 1 al actualizar la biblioteca, sin errores JavaScript ni pérdida del formulario.
+- 105 respuestas HTML públicas comprobadas tras desplegar: **0 consultas SQL públicas adicionales**.
+- Copia de seguridad previa completada y aplicación saludable. No se aplicaron migraciones ni se crearon registros comerciales de prueba en producción.
+
+Imagen publicada y probada: `sha256:c17101781244ea346aa939af9e8b9e052f655dffb155c32b80803c75a1487870`.
+
+Evidencias: [resumen](forms-verification.json), [producción](forms-production-verification.json), [campos obligatorios](admin-required-fields.png), [selector con imágenes](admin-select-options.png), [SQL/HTTP](performance.json), [prueba de creación](../tests/e2e/admin-create.spec.ts) y [pruebas de validación](../tests/field-errors.test.ts).
+
+Detalles: [JF-32](historial/JF-32-creacion-y-validacion-de-campos-obligatorios.md) y [JF-33](historial/JF-33-selectores-con-busqueda-y-vistas-previas.md).
+
+Los siguientes informes se conservan como antecedentes.
+
 # Diseño editorial y arrastre de fotos — 6 de noviembre de 2026
 
 La tienda adopta una identidad marfil, nogal y bronce con tipografías Cormorant Garamond y Manrope servidas localmente. Se rediseñaron la portada, las colecciones, los productos, las secciones editoriales, el cierre y el pie de página; la identidad también se aplica a las páginas interiores y los formularios.

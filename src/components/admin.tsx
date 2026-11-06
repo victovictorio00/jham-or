@@ -24,7 +24,10 @@ import {
   Trash2,
   RefreshCw,
 } from "lucide-react";
-import { request, Logout } from "./forms";
+import { request, Logout, RequestError } from "./forms";
+import { Select } from "./select";
+import { RequiredMark, RequiredNote } from "./fields";
+import { slugify } from "@/lib/field-errors";
 import { money, statuses, transitions } from "@/lib/shared";
 import type { OrderLine } from "@/lib/orders";
 const nav = [
@@ -427,6 +430,8 @@ export function Editor({
   const c = config[section];
   const [values, setValues] = useState<Record<string, unknown>>({ ...initial });
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const manualSlug = useRef(Boolean(initial.slug));
   const [success, setSuccess] = useState("");
   const [busy, setBusy] = useState(false);
   const [imageChoices, setImageChoices] = useState(images);
@@ -469,7 +474,26 @@ export function Editor({
   }, [changed]);
   if (!c) return null;
   const set = (key: string, value: unknown) => {
-    setValues((v) => ({ ...v, [key]: value }));
+    if (key === "slug") manualSlug.current = Boolean(value);
+    setValues((v) => ({
+      ...v,
+      [key]: value,
+      ...(!initial.id &&
+      !manualSlug.current &&
+      ["name", "title"].includes(key) &&
+      c.fields.some((field) => field.key === "slug")
+        ? { slug: slugify(String(value)) }
+        : {}),
+    }));
+    setError("");
+    setFieldErrors((current) => {
+      const next = { ...current };
+      delete next[key];
+      if (!initial.id && !manualSlug.current && ["name", "title"].includes(key))
+        delete next.slug;
+      if (key === "price") delete next.salePrice;
+      return next;
+    });
     setSuccess("");
   };
   function close() {
@@ -488,6 +512,7 @@ export function Editor({
       setSuccess("No hay cambios nuevos.");
       return;
     }
+    setFieldErrors({});
     setBusy(true);
     try {
       const body = { ...values };
@@ -536,13 +561,60 @@ export function Editor({
       if (section !== "configuracion") router.push(`/admin/${section}`);
       if (section === "configuracion") router.refresh();
     } catch (e) {
-      setError((e as Error).message);
+      const fields = e instanceof RequestError ? e.fieldErrors : {};
+      setFieldErrors(fields);
+      setError(
+        Object.keys(fields).length
+          ? "Revisa los campos señalados. Tus datos se han conservado."
+          : (e as Error).message,
+      );
+      requestAnimationFrame(() => {
+        const key = Object.keys(fields)[0];
+        if (key) {
+          const control = formRef.current?.elements.namedItem(
+            key,
+          ) as HTMLInputElement | null;
+          if (control?.tagName === "SELECT")
+            control.parentElement
+              ?.querySelector<HTMLButtonElement>('[role="combobox"]')
+              ?.focus();
+          else control?.focus();
+        }
+      });
     } finally {
       setBusy(false);
     }
   }
   return (
-    <form className="editor-form" onSubmit={save} ref={formRef}>
+    <form
+      className="editor-form"
+      onSubmit={save}
+      ref={formRef}
+      onInvalidCapture={(event) => {
+        const target = event.target as HTMLInputElement;
+        if (target.name) {
+          const label =
+            c.fields.find((field) => field.key === target.name)?.label ||
+            "este campo";
+          setFieldErrors((current) => ({
+            ...current,
+            [target.name]: target.validity.valueMissing
+              ? `Completa ${label.toLowerCase()}.`
+              : target.validity.rangeUnderflow
+                ? `${label}: el mínimo es ${target.min}.`
+                : target.validity.rangeOverflow
+                  ? `${label}: el máximo es ${target.max}.`
+                  : target.validity.tooShort
+                    ? `${label}: escribe al menos ${target.minLength} caracteres.`
+                    : target.validity.typeMismatch && target.type === "email"
+                      ? "Introduce un correo electrónico válido."
+                      : `Revisa ${label.toLowerCase()}.`,
+          }));
+          setError("Completa o corrige los campos señalados antes de guardar.");
+        }
+      }}
+    >
+      <RequiredNote />
       <div className="editor-fields">
         {c.fields.map((f) => {
           let value = values[f.key];
@@ -553,6 +625,25 @@ export function Editor({
               ? categories.map((c) => ({ value: c.id, label: c.name }))
               : f.options;
           const stored = values[f.key];
+          const required = Boolean(
+            f.required ||
+              (f.key === "password" && !initial.id) ||
+              f.key === "role",
+          );
+          const label =
+            f.key === "password"
+              ? initial.id
+                ? "Nueva contraseña (opcional, mínimo 12 caracteres)"
+                : "Contraseña inicial (mínimo 12 caracteres)"
+              : f.label;
+          const accessibility = {
+            name: f.key,
+            "aria-label": label,
+            "aria-invalid": Boolean(fieldErrors[f.key]) || undefined,
+            "aria-describedby": fieldErrors[f.key]
+              ? `error-${f.key}`
+              : undefined,
+          };
           return (
             <div
               key={f.key}
@@ -573,22 +664,33 @@ export function Editor({
                 </label>
               ) : (
                 <label>
-                  {f.label}
+                  <span className="field-caption">
+                    {label}
+                    {required && <RequiredMark />}
+                  </span>
                   {f.type === "textarea" ? (
                     <textarea
                       rows={f.key === "content" ? 16 : 5}
-                      aria-label={f.label}
+                      {...accessibility}
                       value={String(value ?? "")}
                       onChange={(e) => set(f.key, e.target.value)}
-                      required={f.required}
-                      maxLength={f.key === "content" ? 30000 : 10000}
+                      required={required}
+                      maxLength={
+                        f.key === "content"
+                          ? 30000
+                          : f.key === "heroTitle"
+                            ? 200
+                            : f.key === "heroText" || section === "categorias"
+                              ? 1000
+                              : 10000
+                      }
                     />
                   ) : f.type === "select" ? (
-                    <select
-                      aria-label={f.label}
+                    <Select
+                      {...accessibility}
                       value={String(value ?? "")}
                       onChange={(e) => set(f.key, e.target.value)}
-                      required={f.required}
+                      required={required}
                     >
                       <option value="">Selecciona una opción</option>
                       {options?.map((o) => (
@@ -596,7 +698,7 @@ export function Editor({
                           {o.label}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   ) : f.type === "image" ? (
                     <div className="image-picker">
                       {Boolean(value) && (
@@ -616,11 +718,11 @@ export function Editor({
                           loading="eager"
                         />
                       )}
-                      <select
-                        aria-label={f.label}
+                      <Select
+                        {...accessibility}
                         value={String(value ?? "")}
                         onChange={(e) => set(f.key, e.target.value)}
-                        required={f.required}
+                        required={required}
                       >
                         <option value="">Sin imagen</option>
                         {[
@@ -639,11 +741,18 @@ export function Editor({
                             ].map((i) => [i.url, i]),
                           ).values(),
                         ].map((i) => (
-                          <option key={i.url} value={i.url}>
+                          <option
+                            key={i.url}
+                            value={i.url}
+                            data-thumbnail={
+                              i.thumbnailUrl ||
+                              `/_next/image?url=${encodeURIComponent(i.url)}&w=64&q=75`
+                            }
+                          >
                             {i.name}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                       <Link
                         prefetch={false}
                         href="/admin/media"
@@ -667,6 +776,7 @@ export function Editor({
                     <>
                       <textarea
                         rows={4}
+                        {...accessibility}
                         value={
                           Array.isArray(value)
                             ? value.join("\n")
@@ -675,7 +785,7 @@ export function Editor({
                         onChange={(e) => set(f.key, e.target.value)}
                       />
                       {f.type === "images" && (
-                        <select
+                        <Select
                           aria-label="Añadir foto a la galería"
                           value=""
                           onChange={(e) => {
@@ -698,15 +808,31 @@ export function Editor({
                             Añadir imagen de la biblioteca…
                           </option>
                           {imageChoices.map((i) => (
-                            <option value={i.url} key={i.url}>
+                            <option
+                              value={i.url}
+                              key={i.url}
+                              data-thumbnail={
+                                i.thumbnailUrl ||
+                                `/_next/image?url=${encodeURIComponent(i.url)}&w=64&q=75`
+                              }
+                            >
                               {i.name}
                             </option>
                           ))}
-                        </select>
+                        </Select>
                       )}
                     </>
                   ) : (
                     <input
+                      {...accessibility}
+                      onBlur={
+                        f.key === "slug"
+                          ? () => {
+                              if (values.slug)
+                                set("slug", slugify(String(values.slug)));
+                            }
+                          : undefined
+                      }
                       type={f.type === "money" ? "number" : f.type || "text"}
                       value={
                         f.type === "datetime-local" && value
@@ -722,8 +848,23 @@ export function Editor({
                       }
                       min={
                         ["money", "number"].includes(f.type || "")
-                          ? 0
+                          ? ["price", "salePrice"].includes(f.key)
+                            ? 0.01
+                            : f.key === "percent"
+                              ? 1
+                              : 0
                           : undefined
+                      }
+                      max={
+                        f.key === "percent"
+                          ? 80
+                          : f.key === "leadDays"
+                            ? 365
+                            : f.key === "stock"
+                              ? 100000
+                              : f.key === "position"
+                                ? 1000
+                                : undefined
                       }
                       minLength={
                         f.type === "password" && value ? 12 : undefined
@@ -733,7 +874,13 @@ export function Editor({
                           ? 200
                           : f.type === "password"
                             ? 128
-                            : 1000
+                            : f.key === "phone"
+                              ? 30
+                              : f.key === "email"
+                                ? 254
+                                : ["address", "hours", "footer"].includes(f.key)
+                                  ? 300
+                                  : 200
                       }
                       onChange={(e) =>
                         set(
@@ -741,19 +888,28 @@ export function Editor({
                           f.type === "money"
                             ? e.target.value === ""
                               ? ""
-                              : Number(e.target.value) * 100
+                              : Math.round(Number(e.target.value) * 100)
                             : e.target.value,
                         )
                       }
-                      required={
-                        f.required || (f.key === "password" && !initial.id)
-                      }
+                      required={required}
                       autoComplete={
                         f.type === "password" ? "new-password" : undefined
                       }
                     />
                   )}
                 </label>
+              )}
+              {fieldErrors[f.key] && (
+                <p className="field-error" id={`error-${f.key}`}>
+                  {fieldErrors[f.key]}
+                </p>
+              )}
+              {f.key === "slug" && (
+                <p className="small muted field-help">
+                  Se genera a partir del nombre; puedes personalizarlo. Usa
+                  minúsculas, números y guiones.
+                </p>
               )}
               {f.help && <p className="small muted field-help">{f.help}</p>}
             </div>
@@ -867,8 +1023,10 @@ export function MediaCard({
       >
         <label>
           Título
+          <RequiredMark />
           <input
             name="name"
+            aria-label="Título"
             defaultValue={item.name}
             required
             maxLength={200}
@@ -1056,7 +1214,13 @@ export function OrderEditor({ order: o }: { order: Record<string, unknown> }) {
         <h2>Gestionar pedido</h2>
         <label>
           Estado
-          <select value={status} onChange={(e) => setStatus(e.target.value)}>
+          <RequiredMark />
+          <Select
+            aria-label="Estado"
+            required
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
             {[String(o.status), ...(transitions[String(o.status)] || [])].map(
               (s) => (
                 <option key={s} value={s}>
@@ -1064,15 +1228,21 @@ export function OrderEditor({ order: o }: { order: Record<string, unknown> }) {
                 </option>
               ),
             )}
-          </select>
+          </Select>
         </label>
         <label>
           Pago
-          <select value={payment} onChange={(e) => setPayment(e.target.value)}>
+          <RequiredMark />
+          <Select
+            aria-label="Pago"
+            required
+            value={payment}
+            onChange={(e) => setPayment(e.target.value)}
+          >
             <option value="PENDING">Pendiente</option>
             <option value="PAID">Pagado (comprobado)</option>
             <option value="REFUNDED">Reembolsado</option>
-          </select>
+          </Select>
         </label>
         <label>
           Nota visible para el cliente

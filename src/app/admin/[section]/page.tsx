@@ -1,5 +1,6 @@
 import { MediaUpload } from "@/components/media-upload";
 import Link from "next/link";
+import { Select } from "@/components/select";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Prisma } from "@prisma/client";
@@ -30,6 +31,7 @@ const sections: Record<
   clientes: {
     title: "Clientes",
     description: "Personas que hacen de Jham-or parte de su hogar.",
+    create: "Añadir cliente",
   },
   equipo: {
     title: "Equipo y permisos",
@@ -130,6 +132,8 @@ export default async function AdminSection({
       };
     if (section === "categorias" && edit === "new")
       initial = { active: true, position: 0, description: "", image: "" };
+    if (section === "clientes" && edit === "new")
+      initial = { active: true, phone: "" };
     if (section === "equipo" && edit === "new")
       initial = { active: true, role: "ADMIN", phone: "" };
     if (section === "paginas" && edit === "new")
@@ -206,7 +210,7 @@ export default async function AdminSection({
           defaultValue={q}
         />
         {section === "pedidos" && (
-          <select
+          <Select
             name="estado"
             aria-label="Estado del pedido"
             defaultValue={p.estado || ""}
@@ -217,17 +221,17 @@ export default async function AdminSection({
                 {l}
               </option>
             ))}
-          </select>
+          </Select>
         )}
         {section === "productos" && (
-          <select
+          <Select
             name="stock"
             aria-label="Filtrar inventario"
             defaultValue={p.stock || ""}
           >
             <option value="">Todo el inventario</option>
             <option value="bajo">Stock bajo (3 o menos)</option>
-          </select>
+          </Select>
         )}
         <button className="button small-button">Buscar</button>
         <Link

@@ -20,6 +20,7 @@ import {
   Check,
   ArrowRight,
 } from "lucide-react";
+import { RequiredMark } from "./fields";
 import { CardProduct, CartItem, money } from "@/lib/shared";
 type CartContextType = {
   items: CartItem[];
@@ -216,7 +217,8 @@ export function ProductPurchase({ product: p }: { product: CardProduct }) {
       {p.finishes.length > 0 && (
         <fieldset>
           <legend>
-            Acabado <span>— {finish}</span>
+            Acabado
+            <RequiredMark /> <span>— {finish}</span>
           </legend>
           <div className="finish-options">
             {p.finishes.map((f) => (

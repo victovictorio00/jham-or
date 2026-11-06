@@ -4,7 +4,17 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Eye, EyeOff, LogOut } from "lucide-react";
 import { useCart } from "./shop";
+import { Select } from "./select";
+import { RequiredMark, RequiredNote } from "./fields";
 import { money, safeNext, Settings, statuses } from "@/lib/shared";
+export class RequestError extends Error {
+  constructor(
+    message: string,
+    public fieldErrors: Record<string, string> = {},
+  ) {
+    super(message);
+  }
+}
 export async function request(url: string, method: string, body?: unknown) {
   const res = await fetch(url, {
     method,
@@ -19,9 +29,17 @@ export async function request(url: string, method: string, body?: unknown) {
           ? undefined
           : JSON.stringify(body),
   });
-  const data = await res.json();
+  const data = await res.json().catch(() => ({
+    error:
+      "El servidor no respondió correctamente. Tus datos siguen en el formulario; vuelve a intentarlo.",
+  }));
   if (!res.ok)
-    throw new Error(data.error || "No se pudo completar la solicitud.");
+    throw new RequestError(
+      Object.values(data.fieldErrors || {}).join(" ") ||
+        data.error ||
+        "No se pudo completar la solicitud.",
+      data.fieldErrors || {},
+    );
   return data;
 }
 export function PasswordField({
@@ -41,9 +59,11 @@ export function PasswordField({
   return (
     <label>
       {label}
+      {required && <RequiredMark />}
       <div className="password-field">
         <input
           name={name}
+          aria-label={label}
           type={visible ? "text" : "password"}
           autoComplete={autoComplete}
           required={required}
@@ -96,12 +116,15 @@ export function AuthForm({
   }
   return (
     <form onSubmit={submit} className="stack-form">
+      <RequiredNote />
       {register && (
         <>
           <label>
             Nombre completo
+            <RequiredMark />
             <input
               name="name"
+              aria-label="Nombre completo"
               autoComplete="name"
               required
               minLength={2}
@@ -110,8 +133,10 @@ export function AuthForm({
           </label>
           <label>
             Teléfono
+            <RequiredMark />
             <input
               name="phone"
+              aria-label="Teléfono"
               type="tel"
               autoComplete="tel"
               required
@@ -123,9 +148,11 @@ export function AuthForm({
       )}
       <label>
         Correo electrónico
+        <RequiredMark />
         <input
           type="email"
           name="email"
+          aria-label="Correo electrónico"
           autoComplete="email"
           maxLength={254}
           required
@@ -192,10 +219,20 @@ export function ProfileForm({
 }) {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
   const router = useRouter();
   return (
     <form
       className="stack-form"
+      onChange={(event) => {
+        const form = event.currentTarget;
+        setChangingPassword(
+          Boolean(
+            (form.elements.namedItem("password") as HTMLInputElement | null)
+              ?.value,
+          ),
+        );
+      }}
       onSubmit={async (e) => {
         e.preventDefault();
         const form = e.currentTarget;
@@ -216,13 +253,28 @@ export function ProfileForm({
         }
       }}
     >
+      <RequiredNote />
       <label>
         Nombre
-        <input name="name" defaultValue={user.name} required minLength={2} />
+        <RequiredMark />
+        <input
+          name="name"
+          aria-label="Nombre"
+          defaultValue={user.name}
+          required
+          minLength={2}
+        />
       </label>
       <label>
         Teléfono
-        <input name="phone" defaultValue={user.phone} required minLength={7} />
+        <RequiredMark />
+        <input
+          name="phone"
+          aria-label="Teléfono"
+          defaultValue={user.phone}
+          required
+          minLength={7}
+        />
       </label>
       <details>
         <summary>Cambiar contraseña</summary>
@@ -231,7 +283,7 @@ export function ProfileForm({
           name="currentPassword"
           autoComplete="current-password"
           minLength={1}
-          required={false}
+          required={changingPassword}
         />
         <PasswordField
           label="Nueva contraseña (12 caracteres como mínimo)"
@@ -316,12 +368,15 @@ export function CheckoutForm({
   return (
     <form className="cart-layout" onSubmit={submit}>
       <div className="stack-form">
+        <RequiredNote />
         <h2>Datos de entrega</h2>
         <div className="form-grid">
           <label>
             Nombre de quien recibe
+            <RequiredMark />
             <input
               name="name"
+              aria-label="Nombre de quien recibe"
               defaultValue={user.name}
               required
               minLength={2}
@@ -330,8 +385,10 @@ export function CheckoutForm({
           </label>
           <label>
             Teléfono de contacto
+            <RequiredMark />
             <input
               name="phone"
+              aria-label="Teléfono de contacto"
               type="tel"
               defaultValue={user.phone}
               required
@@ -342,7 +399,10 @@ export function CheckoutForm({
         </div>
         <label>
           Modalidad
-          <select
+          <RequiredMark />
+          <Select
+            required
+            aria-label="Modalidad"
             value={delivery}
             onChange={(e) => setDelivery(e.target.value)}
           >
@@ -350,14 +410,16 @@ export function CheckoutForm({
             {s.pickupAddress && (
               <option value="PICKUP">Recojo en tienda</option>
             )}
-          </select>
+          </Select>
         </label>
         {delivery === "DELIVERY" ? (
           <>
             <label>
               Dirección completa
+              <RequiredMark />
               <input
                 name="address"
+                aria-label="Dirección completa"
                 required
                 minLength={5}
                 maxLength={500}
@@ -366,7 +428,14 @@ export function CheckoutForm({
             </label>
             <label>
               Distrito
-              <input name="district" required minLength={2} maxLength={150} />
+              <RequiredMark />
+              <input
+                name="district"
+                aria-label="Distrito"
+                required
+                minLength={2}
+                maxLength={150}
+              />
             </label>
             <p className="small muted">
               Cobertura: {s.deliveryArea}. El plazo de cada mueble se muestra en
@@ -383,11 +452,12 @@ export function CheckoutForm({
         <h2>Preferencia de pago</h2>
         <label>
           Método
-          <select name="payment">
+          <RequiredMark />
+          <Select name="payment" required aria-label="Método">
             <option value="TRANSFER">Transferencia bancaria</option>
             <option value="YAPE">Yape</option>
             <option value="CASH">Efectivo a coordinar</option>
-          </select>
+          </Select>
         </label>
         <p className="small muted">
           Registraremos tu pedido pendiente de confirmación. El equipo
@@ -446,6 +516,7 @@ export function CheckoutForm({
         )}
         <label className="checkbox">
           <input type="checkbox" required />
+          <RequiredMark />
           Acepto los{" "}
           <Link href="/paginas/terminos" target="_blank">
             términos de compra

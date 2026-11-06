@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Select } from "@/components/select";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ProductCard } from "./shop";
 import type { CardProduct } from "@/lib/shared";
@@ -101,7 +102,7 @@ export function CatalogView({
             defaultValue={q}
             maxLength={100}
           />
-          <select
+          <Select
             name="orden"
             aria-label="Ordenar colección"
             defaultValue={sort}
@@ -110,7 +111,7 @@ export function CatalogView({
             <option value="new">Más recientes</option>
             <option value="price-asc">Menor precio</option>
             <option value="price-desc">Mayor precio</option>
-          </select>
+          </Select>
           <button className="button small-button">Buscar</button>
         </form>
       </div>

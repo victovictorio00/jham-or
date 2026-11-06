@@ -1,5 +1,5 @@
 {
-  "at": "2026-11-06T04:30:45.829Z",
+  "at": "2026-11-06T18:12:39.844Z",
   "base": "https://jhamor.purprum.com",
   "notes": "Complete HTML requests from this server, including the first request of each measured URL and a never-seen search. Routes were preloaded by server startup, not by this verifier. Public SQL includes Product, Category, Setting, Page and PublicationState. Private operations and SELECT 1 health checks are excluded.",
   "results": [
@@ -10,8 +10,8 @@
       "cacheStatuses": [
         "HIT"
       ],
-      "p50ms": 43.6,
-      "p95ms": 142
+      "p50ms": 45.7,
+      "p95ms": 166.7
     },
     {
       "path": "/productos",
@@ -20,8 +20,8 @@
       "cacheStatuses": [
         "HIT"
       ],
-      "p50ms": 30.7,
-      "p95ms": 43
+      "p50ms": 32.7,
+      "p95ms": 98.6
     },
     {
       "path": "/productos/sofa-olivo",
@@ -30,8 +30,8 @@
       "cacheStatuses": [
         "HIT"
       ],
-      "p50ms": 30.7,
-      "p95ms": 179.2
+      "p50ms": 33.5,
+      "p95ms": 51.7
     },
     {
       "path": "/nosotros",
@@ -40,8 +40,8 @@
       "cacheStatuses": [
         "HIT"
       ],
-      "p50ms": 30,
-      "p95ms": 32.7
+      "p50ms": 30.4,
+      "p95ms": 33.4
     },
     {
       "path": "/paginas/terminos",
@@ -50,18 +50,18 @@
       "cacheStatuses": [
         "HIT"
       ],
-      "p50ms": 29.7,
-      "p95ms": 41.3
+      "p50ms": 31.5,
+      "p95ms": 36
     },
     {
-      "path": "/productos?q=2659e1ed-0d38-48d3-b38f-d893ba500387",
+      "path": "/productos?q=0306d277-6141-4143-8393-fa6167f35d15",
       "requests": 15,
       "additionalPublicQueries": 0,
       "cacheStatuses": [
         "HIT"
       ],
-      "p50ms": 31,
-      "p95ms": 53.9
+      "p50ms": 31.3,
+      "p95ms": 33.3
     },
     {
       "path": "/productos?categoria=sala&orden=price-asc",
@@ -70,8 +70,8 @@
       "cacheStatuses": [
         "HIT"
       ],
-      "p50ms": 29.4,
-      "p95ms": 72.8
+      "p50ms": 31,
+      "p95ms": 34.2
     }
   ]
 }

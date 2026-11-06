@@ -1,3 +1,4 @@
+import { chooseOption, selectedValue } from "../helpers/select";
 import { test, expect } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { randomUUID } from "node:crypto";
@@ -149,14 +150,14 @@ test("cover preview uses a thumbnail without API calls and refresh keeps unsaved
   const title = page.getByLabel("Título de portada", { exact: true });
   const oldTitle = await title.inputValue();
   const select = page.getByLabel("Fotografía de portada", { exact: true });
-  const previous = await select.inputValue();
+  const previous = await selectedValue(select);
   let apiCalls = 0,
     rscCalls = 0;
   page.on("request", (request) => {
     if (new URL(request.url()).pathname.startsWith("/api/")) apiCalls++;
     if (request.headers()["rsc"] === "1") rscCalls++;
   });
-  await select.selectOption(image.url);
+  await chooseOption(page, "Fotografía de portada", image.url);
   const preview = page.getByAltText("Imagen seleccionada", { exact: true });
   await expect(preview).toHaveAttribute("src", image.thumbnailUrl);
   await expect
@@ -179,7 +180,7 @@ test("cover preview uses a thumbnail without API calls and refresh keeps unsaved
   expect(rscCalls).toBe(0);
   await expect(title).toHaveValue("Texto sin guardar de prueba");
   await title.fill(oldTitle);
-  await select.selectOption(previous);
+  await chooseOption(page, "Fotografía de portada", previous);
   await page.goto("/admin/media");
   page.on("dialog", (dialog) => dialog.accept());
   const card = page.getByRole("article", { name: image.name, exact: true });

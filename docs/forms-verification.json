@@ -1,0 +1,47 @@
+{
+  "at": "2026-11-06T18:14:04.794Z",
+  "image": "sha256:c17101781244ea346aa939af9e8b9e052f655dffb155c32b80803c75a1487870",
+  "tests": {
+    "unit": 13,
+    "browser": 17,
+    "typecheck": true
+  },
+  "creationSections": [
+    "productos",
+    "categorias",
+    "paginas",
+    "cupones",
+    "clientes",
+    "equipo"
+  ],
+  "checks": [
+    "Required markers reflect real requirements",
+    "Generated slugs preserve existing URLs and custom input",
+    "Invalid sale price points to the field without losing values",
+    "Duplicate slug points to the field and allows correction",
+    "Administrator can create customers; owner creation still returns 403",
+    "Image options search locally with no API request",
+    "Select works from label, by keyboard and at 390px",
+    "Existing commerce, concurrent stock, media uploads and publication pass"
+  ],
+  "production": {
+    "at": "2026-11-06T18:12:21.675Z",
+    "base": "https://jhamor.purprum.com",
+    "publicRequiredMarkers": true,
+    "customerCreationRoute": true,
+    "initialPasswordRequired": true,
+    "productRequiredMarkers": true,
+    "styledOptions": true,
+    "searchableImages": true,
+    "thumbnails": true,
+    "mobileOptionsFit": true,
+    "keyboardClose": true,
+    "selectionApiRequests": 0,
+    "emptyCreationApiRequests": 0,
+    "javascriptErrors": []
+  },
+  "publicPerformance": {
+    "requests": 105,
+    "additionalPublicQueries": 0
+  }
+}

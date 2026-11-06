@@ -12,6 +12,10 @@ El catálogo de seis muebles es una **muestra**, con fotografías de referencia 
 
 Completa Diseño y tienda: contacto, WhatsApp con código de país, dirección, horario, cobertura y costo de envío. El recojo se habilita al indicar una dirección de recojo. Revisa las páginas Términos, Privacidad y Envíos; contienen un texto inicial que requiere los datos y condiciones definitivas del negocio.
 
+Los campos que llevan (*) son obligatorios. Al crear muebles, categorías o páginas, el enlace se propone a partir del nombre y se puede personalizar. Si hay un error, se indica el campo que debes corregir sin borrar el formulario. Las contraseñas iniciales son obligatorias al crear cuentas; al editar puedes dejarlas vacías para conservarlas.
+
+Los desplegables tienen un diseño propio. En listas largas puedes buscar por nombre; las imágenes incluyen miniaturas. Puedes usar flechas, Inicio, Fin, Enter y Escape. Abrir, buscar o elegir una opción no vuelve a consultar la biblioteca.
+
 ## Catálogo e inventario
 
 Muebles → Añadir mueble permite definir nombre, enlace, SKU, categoría, descripción, precio, oferta, imágenes, material, medidas, acabados y plazo. Los precios se escriben en soles; el servidor conserva céntimos enteros. Las ofertas deben ser menores al precio normal.
@@ -28,7 +32,7 @@ Los métodos iniciales son transferencia, Yape y efectivo a coordinar. **No hay 
 
 ## Clientes y equipo
 
-Clientes permite editar datos y desactivar cuentas. Una cuenta desactivada pierde acceso. El propietario puede crear administradores y cambiar permisos. Los administradores gestionan la tienda, pero no gestionan accesos del equipo. La contraseña de una cuenta puede cambiarse desde su ficha; cambiarla invalida sus sesiones. No se puede quitar el acceso al propietario desde el panel.
+Clientes permite añadir cuentas con una contraseña inicial, editar datos y desactivar cuentas. Los administradores pueden crear clientes; la gestión de cuentas del equipo sigue reservada al propietario. Una cuenta desactivada pierde acceso. El propietario puede crear administradores y cambiar permisos. Los administradores gestionan la tienda, pero no gestionan accesos del equipo. La contraseña de una cuenta puede cambiarse desde su ficha; cambiarla invalida sus sesiones. No se puede quitar el acceso al propietario desde el panel.
 
 ## Imágenes y contenido
 

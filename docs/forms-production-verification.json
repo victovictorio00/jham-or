@@ -1,0 +1,16 @@
+{
+  "at": "2026-11-06T18:12:21.675Z",
+  "base": "https://jhamor.purprum.com",
+  "publicRequiredMarkers": true,
+  "customerCreationRoute": true,
+  "initialPasswordRequired": true,
+  "productRequiredMarkers": true,
+  "styledOptions": true,
+  "searchableImages": true,
+  "thumbnails": true,
+  "mobileOptionsFit": true,
+  "keyboardClose": true,
+  "selectionApiRequests": 0,
+  "emptyCreationApiRequests": 0,
+  "javascriptErrors": []
+}

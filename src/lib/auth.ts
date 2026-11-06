@@ -1,3 +1,4 @@
+import { validationFields, type ValidationIssue } from "./field-errors";
 import { cache } from "react";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { cookies } from "next/headers";
@@ -97,6 +98,9 @@ export function failure(e: unknown) {
       {
         error: "Revisa los campos del formulario.",
         details: (e as { issues: unknown }).issues,
+        fieldErrors: validationFields(
+          (e as { issues: ValidationIssue[] }).issues,
+        ),
       },
       { status: 400 },
     );
