@@ -1,5 +1,7 @@
 export const fieldLabels: Record<string, string> = {
   name: "Nombre",
+  variants: "Variantes",
+  heroImages: "Carrusel de portada",
   title: "Título",
   slug: "Enlace (slug)",
   sku: "Código interno / SKU",
@@ -50,18 +52,23 @@ export function validationFields(issues: ValidationIssue[]) {
   for (const issue of issues) {
     const key = String(issue.path?.[0] ?? "");
     if (!key || fields[key]) continue;
-    const label = fieldLabels[key] || "Este campo";
+    const label =
+      key === "variants" && typeof issue.path?.[1] === "number"
+        ? `Variante ${issue.path[1] + 1} · ${fieldLabels[String(issue.path[2])] || "datos"}`
+        : fieldLabels[key] || "Este campo";
     let message = `Revisa ${label.toLocaleLowerCase("es-PE")}.`;
     if (issue.code === "custom" && issue.message) message = issue.message;
     else if (key === "slug")
       message = "Usa minúsculas, números y guiones, sin espacios.";
     else if (issue.code === "too_small")
       message =
-        issue.origin === "number"
-          ? `${label}: el mínimo es ${String(issue.minimum)}.`
-          : issue.minimum === 1
-            ? `Completa ${label.toLowerCase()}.`
-            : `${label}: escribe al menos ${String(issue.minimum)} caracteres.`;
+        issue.origin === "array"
+          ? `${label}: selecciona al menos ${String(issue.minimum)} ${key === "heroImages" ? "imagen" : "elemento"}.`
+          : issue.origin === "number"
+            ? `${label}: el mínimo es ${String(issue.minimum)}.`
+            : issue.minimum === 1
+              ? `Completa ${label.toLowerCase()}.`
+              : `${label}: escribe al menos ${String(issue.minimum)} caracteres.`;
     else if (issue.code === "too_big")
       message =
         issue.origin === "number"

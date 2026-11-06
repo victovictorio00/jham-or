@@ -1,3 +1,4 @@
+import { resolveOffer, syncVariantStock } from "./offers";
 import { invalidateAdmin } from "./admin-cache";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
@@ -14,6 +15,7 @@ import {
 } from "./publish-runtime";
 export type OrderLine = {
   productId: string;
+  variantId?: string;
   name: string;
   sku: string;
   image: string;
@@ -50,54 +52,82 @@ export async function placeOrder(
         deletedAt: null,
         category: { active: true },
       },
+      include: { variants: { where: { active: true } } },
     });
-    await validateMediaReferences(
-      tx,
-      products.map((product) => product.image),
-    );
     const lines: OrderLine[] = [];
-    const quantities = new Map<string, number>();
+    const quantities = new Map<
+      string,
+      {
+        productId: string;
+        variantId?: string;
+        quantity: number;
+        madeToOrder: boolean;
+        name: string;
+      }
+    >();
+    const perProduct = new Map<string, number>();
     for (const item of data.items) {
-      const p = products.find((p) => p.id === item.productId);
-      if (!p)
+      const product = products.find((product) => product.id === item.productId);
+      if (!product)
         throw new AppError(409, "Uno de los muebles ya no está disponible.");
-      if (
-        (p.finishes.length && !p.finishes.includes(item.finish)) ||
-        (!p.finishes.length && item.finish)
-      )
-        throw new AppError(400, "Selecciona un acabado válido.");
-      quantities.set(p.id, (quantities.get(p.id) || 0) + item.quantity);
+      const offer = resolveOffer(product, item);
+      const total = (perProduct.get(product.id) || 0) + item.quantity;
+      if (total > 20) throw new AppError(400, "Máximo 20 unidades por mueble.");
+      perProduct.set(product.id, total);
+      const key = product.id + ":" + (offer.variantId || "base");
+      const previous = quantities.get(key);
+      quantities.set(key, {
+        productId: product.id,
+        variantId: offer.variantId,
+        quantity: (previous?.quantity || 0) + item.quantity,
+        madeToOrder: offer.madeToOrder,
+        name: product.name + (offer.variantId ? " · " + offer.finish : ""),
+      });
       lines.push({
-        productId: p.id,
-        name: p.name,
-        sku: p.sku,
-        image: p.image,
+        productId: product.id,
+        ...(offer.variantId ? { variantId: offer.variantId } : {}),
+        name: product.name,
+        sku: product.sku,
+        image: offer.image,
         quantity: item.quantity,
-        finish: item.finish,
-        unitPrice: p.salePrice ?? p.price,
-        madeToOrder: p.madeToOrder,
-        leadDays: p.leadDays,
+        finish: offer.finish,
+        unitPrice: offer.unitPrice,
+        madeToOrder: offer.madeToOrder,
+        leadDays: product.leadDays,
       });
     }
-    for (const [id, quantity] of [...quantities].sort(([a], [b]) =>
+    await validateMediaReferences(
+      tx,
+      lines.map((line) => line.image),
+    );
+    const variantParents: string[] = [];
+    for (const [, line] of [...quantities].sort(([a], [b]) =>
       a.localeCompare(b),
     )) {
-      const p = products.find((p) => p.id === id)!;
-      if (quantity > 20)
-        throw new AppError(400, "Máximo 20 unidades por mueble.");
-      if (!p.madeToOrder) {
-        const updated = await tx.product.updateMany({
-          where: { id, stock: { gte: quantity } },
-          data: { stock: { decrement: quantity } },
-        });
-        if (updated.count !== 1)
-          throw new AppError(
-            409,
-            `No quedan suficientes unidades de ${p.name}.`,
-          );
-        stockChanged = true;
-      }
+      if (line.madeToOrder) continue;
+      const updated = line.variantId
+        ? await tx.productVariant.updateMany({
+            where: {
+              id: line.variantId,
+              productId: line.productId,
+              active: true,
+              stock: { gte: line.quantity },
+            },
+            data: { stock: { decrement: line.quantity } },
+          })
+        : await tx.product.updateMany({
+            where: { id: line.productId, stock: { gte: line.quantity } },
+            data: { stock: { decrement: line.quantity } },
+          });
+      if (updated.count !== 1)
+        throw new AppError(
+          409,
+          `No quedan suficientes unidades de ${line.name}.`,
+        );
+      if (line.variantId) variantParents.push(line.productId);
+      stockChanged = true;
     }
+    await syncVariantStock(tx, variantParents);
     const s = await tx.setting.findUnique({ where: { key: "store" } });
     const config = { ...defaultSettings, ...((s?.value as object) ?? {}) };
     if (data.delivery === "PICKUP" && !config.pickupAddress)
@@ -205,13 +235,25 @@ export async function changeOrder(id: string, actor: string, input: unknown) {
         a.productId.localeCompare(b.productId),
       )) {
         if (!line.madeToOrder) {
-          await tx.product.updateMany({
-            where: { id: line.productId },
-            data: { stock: { increment: line.quantity } },
-          });
+          if (line.variantId)
+            await tx.productVariant.updateMany({
+              where: { id: line.variantId, productId: line.productId },
+              data: { stock: { increment: line.quantity } },
+            });
+          else
+            await tx.product.updateMany({
+              where: { id: line.productId },
+              data: { stock: { increment: line.quantity } },
+            });
           stockChanged = true;
         }
       }
+      await syncVariantStock(
+        tx,
+        lines
+          .filter((line) => line.variantId && !line.madeToOrder)
+          .map((line) => line.productId),
+      );
     }
     changed = true;
     const updated = await tx.order.update({

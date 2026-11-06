@@ -124,6 +124,7 @@ export default async function AdminSection({
         price: 0,
         salePrice: null,
         gallery: [],
+        variants: [],
         finishes: [],
         stock: 0,
         leadDays: 7,

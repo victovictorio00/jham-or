@@ -3,7 +3,7 @@ import { dirname } from "node:path";
 import { randomUUID } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { db } from "./db";
-import { defaultSettings } from "./shared";
+import { defaultSettings, withSettingsDefaults, type Settings } from "./shared";
 import {
   publicationFile,
   readPublishedSnapshot,
@@ -55,10 +55,9 @@ export async function exportPublication(
           };
       if (changed.includes("settings")) {
         const row = await tx.setting.findUnique({ where: { key: "store" } });
-        snapshot.settings = {
-          ...defaultSettings,
-          ...((row?.value as object) ?? {}),
-        };
+        snapshot.settings = withSettingsDefaults(
+          (row?.value as Partial<Settings>) ?? {},
+        );
       }
       if (changed.includes("catalog")) {
         const [categories, products] = await Promise.all([
@@ -95,6 +94,19 @@ export async function exportPublication(
               image: true,
               description: true,
               gallery: true,
+              usesVariants: true,
+              variants: {
+                where: { active: true },
+                orderBy: { position: "asc" },
+                select: {
+                  id: true,
+                  name: true,
+                  price: true,
+                  stock: true,
+                  image: true,
+                  gallery: true,
+                },
+              },
               material: true,
               dimensions: true,
               finishes: true,

@@ -1,3 +1,4 @@
+import { resolveOffer } from "@/lib/offers";
 import { fieldLabels } from "@/lib/field-errors";
 import { cookies } from "next/headers";
 import { z } from "zod";
@@ -96,6 +97,8 @@ async function handler(req: Request, context: Context) {
             .array(
               z.object({
                 productId: z.uuid(),
+                variantId: z.uuid().optional(),
+                finish: z.string().max(200).optional(),
                 quantity: z.number().int().min(1).max(20),
               }),
             )
@@ -111,14 +114,34 @@ async function handler(req: Request, context: Context) {
           deletedAt: null,
           category: { active: true },
         },
-        select: { id: true, price: true, salePrice: true },
+        select: {
+          id: true,
+          price: true,
+          salePrice: true,
+          image: true,
+          stock: true,
+          madeToOrder: true,
+          finishes: true,
+          usesVariants: true,
+          variants: {
+            where: { active: true },
+            select: {
+              id: true,
+              name: true,
+              price: true,
+              stock: true,
+              image: true,
+            },
+          },
+        },
       });
       let subtotal = 0;
       for (const line of data.items) {
         const product = products.find((p) => p.id === line.productId);
         if (!product)
           throw new AppError(409, "Uno de los muebles ya no está disponible.");
-        subtotal += (product.salePrice ?? product.price) * line.quantity;
+        subtotal +=
+          resolveOffer(product, line, false).unitPrice * line.quantity;
       }
       const coupon = await db.coupon.findUnique({
         where: { code: data.coupon.toUpperCase() },
@@ -344,6 +367,7 @@ async function handler(req: Request, context: Context) {
       }
       if (resource === "settings" && method === "PUT") {
         const data = settingsSchema.parse(await req.json());
+        if (data.heroImages?.length) data.heroImage = data.heroImages[0];
         const previous = await db.setting.findUnique({
           where: { key: "store" },
         });
@@ -361,7 +385,7 @@ async function handler(req: Request, context: Context) {
         }
         await transaction(async (tx) => {
           await lockMediaReferences(tx);
-          await validateMediaReferences(tx, data.heroImage);
+          await validateMediaReferences(tx, data);
           await tx.setting.upsert({
             where: { key: "store" },
             create: { key: "store", value: data },
@@ -473,7 +497,27 @@ async function handler(req: Request, context: Context) {
           update: (a: unknown) => Prisma.PrismaPromise<{ id: string }>;
         };
         let data: Record<string, unknown>;
-        const previous = id ? await model.findUnique({ where: { id } }) : null;
+        const previous = id
+          ? resource === "products"
+            ? await db.product.findUnique({
+                where: { id },
+                include: {
+                  variants: {
+                    where: { active: true },
+                    orderBy: { position: "asc" },
+                    select: {
+                      id: true,
+                      name: true,
+                      price: true,
+                      stock: true,
+                      image: true,
+                      gallery: true,
+                    },
+                  },
+                },
+              })
+            : await model.findUnique({ where: { id } })
+          : null;
         if (id && !previous) throw new AppError(404, "Registro no encontrado.");
         if (method === "DELETE") {
           if (!id) throw new AppError(400, "Falta el registro.");
@@ -488,7 +532,8 @@ async function handler(req: Request, context: Context) {
           previous &&
           Object.entries(data).every(
             ([key, value]) =>
-              JSON.stringify(previous[key]) === JSON.stringify(value),
+              JSON.stringify((previous as Record<string, unknown>)[key]) ===
+              JSON.stringify(value),
           )
         ) {
           if (resource !== "coupons")
@@ -508,9 +553,77 @@ async function handler(req: Request, context: Context) {
             pages: tx.page,
             coupons: tx.coupon,
           }[resource as keyof typeof schemas] as unknown as typeof model;
+          const variantRows =
+            resource === "products" && Array.isArray(data.variants)
+              ? (data.variants as {
+                  id: string;
+                  name: string;
+                  price: number;
+                  stock: number;
+                  image: string;
+                  gallery: string[];
+                }[])
+              : undefined;
+          const parentData = { ...data };
+          delete parentData.variants;
+          if (
+            resource === "products" &&
+            variantRows === undefined &&
+            previous?.usesVariants === true
+          ) {
+            for (const key of [
+              "price",
+              "salePrice",
+              "stock",
+              "finishes",
+              "madeToOrder",
+            ])
+              delete parentData[key];
+          }
+          if (variantRows) parentData.usesVariants = variantRows.length > 0;
           const saved = id
-            ? await txModel.update({ where: { id }, data })
-            : await txModel.create({ data });
+            ? await txModel.update({ where: { id }, data: parentData })
+            : await txModel.create({ data: parentData });
+          if (
+            variantRows &&
+            (variantRows.length || previous?.usesVariants === true)
+          ) {
+            const ids = variantRows.map((variant) => variant.id);
+            const claimed = ids.length
+              ? await tx.productVariant.findMany({
+                  where: { id: { in: ids } },
+                  select: { id: true, productId: true },
+                })
+              : [];
+            if (claimed.some((variant) => variant.productId !== saved.id))
+              throw new AppError(
+                400,
+                "Una variante no pertenece a este producto.",
+              );
+            if (id)
+              await tx.productVariant.updateMany({
+                where: {
+                  productId: saved.id,
+                  active: true,
+                  id: { notIn: ids },
+                },
+                data: { active: false },
+              });
+            for (const [position, variant] of variantRows.entries()) {
+              const { id: variantId, ...fields } = variant;
+              await tx.productVariant.upsert({
+                where: { id: variantId, productId: saved.id },
+                create: {
+                  id: variantId,
+                  productId: saved.id,
+                  ...fields,
+                  position,
+                  active: true,
+                },
+                update: { ...fields, position, active: true },
+              });
+            }
+          }
           await tx.audit.create({
             data: {
               actor: actor.email,

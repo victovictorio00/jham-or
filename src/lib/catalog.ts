@@ -71,3 +71,41 @@ export const publicPage = cache(
 export function invalidate(tag: string) {
   revalidateTag(tag, { expire: 0 });
 }
+
+export const navigationPreviews = cache(
+  unstable_cache(
+    async () => {
+      const snapshot = await readPublishedSnapshot();
+      const compact = (product: (typeof snapshot.products)[number]) => ({
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        image: product.image,
+        price:
+          product.usesVariants && product.variants?.length
+            ? Math.min(...product.variants.map((variant) => variant.price))
+            : product.price,
+        salePrice: product.salePrice,
+      });
+      return [
+        {
+          slug: "",
+          name: "Colección",
+          href: "/productos",
+          products: snapshot.products.slice(0, 6).map(compact),
+        },
+        ...snapshot.categories.map((category) => ({
+          slug: category.slug,
+          name: category.name,
+          href: "/productos?categoria=" + encodeURIComponent(category.slug),
+          products: snapshot.products
+            .filter((product) => product.category.slug === category.slug)
+            .slice(0, 6)
+            .map(compact),
+        })),
+      ];
+    },
+    ["navigation-previews-v1"],
+    { tags: ["catalog"], revalidate: false },
+  ),
+);

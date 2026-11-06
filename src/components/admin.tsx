@@ -1,4 +1,7 @@
 "use client";
+import { VariantEditor } from "./variant-editor";
+import type { ProductVariant } from "@/lib/shared";
+import { ImageListEditor } from "./image-list-editor";
 import { useState, useEffect, FormEvent, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
@@ -253,6 +256,7 @@ const config: Record<string, { resource: string; fields: Field[] }> = {
         type: "images",
         help: "Hasta 10 imágenes.",
       },
+      { key: "variants", label: "Variantes del producto", type: "variants" },
       { key: "material", label: "Material", required: true },
       {
         key: "dimensions",
@@ -381,13 +385,12 @@ const config: Record<string, { resource: string; fields: Field[] }> = {
       { key: "brand", label: "Nombre de la marca", required: true },
       { key: "tagline", label: "Lema" },
       {
-        key: "heroTitle",
-        label: "Título de portada",
-        type: "textarea",
+        key: "heroImages",
+        label: "Carrusel de portada",
+        type: "carousel",
         required: true,
+        help: "Añade hasta 8 imágenes y ordénalas. El carrusel muestra únicamente las fotografías.",
       },
-      { key: "heroText", label: "Descripción de portada", type: "textarea" },
-      { key: "heroImage", label: "Fotografía de portada", type: "image" },
       { key: "about", label: "Nuestra historia", type: "textarea" },
       { key: "footer", label: "Texto del pie de página" },
       { key: "email", label: "Correo de contacto", type: "email" },
@@ -535,7 +538,15 @@ export function Editor({
               : Math.round(Number(body[field.key] || 0));
         else if (field.type === "number")
           body[field.key] = Number(body[field.key] || 0);
-        else if (field.type === "lines" || field.type === "images")
+        else if (field.type === "variants")
+          body[field.key] = Array.isArray(body[field.key])
+            ? body[field.key]
+            : [];
+        else if (
+          field.type === "lines" ||
+          field.type === "images" ||
+          field.type === "carousel"
+        )
           body[field.key] = Array.isArray(body[field.key])
             ? body[field.key]
             : String(body[field.key] || "")
@@ -574,7 +585,13 @@ export function Editor({
           const control = formRef.current?.elements.namedItem(
             key,
           ) as HTMLInputElement | null;
-          if (control?.tagName === "SELECT")
+          if (!control || !("focus" in control))
+            formRef.current
+              ?.querySelector<HTMLElement>(
+                `[data-field="${key}"] input,[data-field="${key}"] button`,
+              )
+              ?.focus();
+          else if (control?.tagName === "SELECT")
             control.parentElement
               ?.querySelector<HTMLButtonElement>('[role="combobox"]')
               ?.focus();
@@ -593,12 +610,15 @@ export function Editor({
       onInvalidCapture={(event) => {
         const target = event.target as HTMLInputElement;
         if (target.name) {
+          const fieldKey = target.name.startsWith("variant-")
+            ? "variants"
+            : target.name;
           const label =
             c.fields.find((field) => field.key === target.name)?.label ||
             "este campo";
           setFieldErrors((current) => ({
             ...current,
-            [target.name]: target.validity.valueMissing
+            [fieldKey]: target.validity.valueMissing
               ? `Completa ${label.toLowerCase()}.`
               : target.validity.rangeUnderflow
                 ? `${label}: el mínimo es ${target.min}.`
@@ -615,8 +635,46 @@ export function Editor({
       }}
     >
       <RequiredNote />
+      {c.fields.some((field) =>
+        ["image", "images", "carousel", "variants"].includes(field.type || ""),
+      ) && (
+        <div className="editor-library-actions">
+          <span>Biblioteca de imágenes</span>
+          <Link
+            prefetch={false}
+            href="/admin/media"
+            target="_blank"
+            className="text-link small"
+          >
+            Subir imágenes en otra pestaña
+          </Link>
+          <button
+            type="button"
+            className="button outline small-button"
+            onClick={refreshImages}
+            disabled={refreshingImages}
+          >
+            {refreshingImages ? "Actualizando…" : "Actualizar biblioteca"}
+          </button>
+        </div>
+      )}
       <div className="editor-fields">
         {c.fields.map((f) => {
+          if (
+            section === "productos" &&
+            Array.isArray(values.variants) &&
+            values.variants.length &&
+            [
+              "price",
+              "salePrice",
+              "stock",
+              "finishes",
+              "madeToOrder",
+              "image",
+              "gallery",
+            ].includes(f.key)
+          )
+            return null;
           let value = values[f.key];
           if (f.type === "money" && typeof value === "number")
             value = value / 100;
@@ -624,6 +682,9 @@ export function Editor({
             f.key === "categoryId"
               ? categories.map((c) => ({ value: c.id, label: c.name }))
               : f.options;
+          const FieldLabel = ["variants", "carousel"].includes(f.type || "")
+            ? "div"
+            : "label";
           const stored = values[f.key];
           const required = Boolean(
             f.required ||
@@ -647,8 +708,15 @@ export function Editor({
           return (
             <div
               key={f.key}
+              data-field={f.key}
               className={
-                ["textarea", "image", "images"].includes(f.type || "")
+                [
+                  "textarea",
+                  "image",
+                  "images",
+                  "carousel",
+                  "variants",
+                ].includes(f.type || "")
                   ? "full-field"
                   : ""
               }
@@ -663,12 +731,32 @@ export function Editor({
                   {f.label}
                 </label>
               ) : (
-                <label>
+                <FieldLabel className="field-label">
                   <span className="field-caption">
                     {label}
                     {required && <RequiredMark />}
                   </span>
-                  {f.type === "textarea" ? (
+                  {f.type === "variants" ? (
+                    <VariantEditor
+                      value={
+                        Array.isArray(stored)
+                          ? (stored as ProductVariant[])
+                          : []
+                      }
+                      choices={imageChoices}
+                      onChange={(variants) => set(f.key, variants)}
+                    />
+                  ) : f.type === "carousel" ? (
+                    <ImageListEditor
+                      label={label}
+                      name={f.key}
+                      value={Array.isArray(stored) ? (stored as string[]) : []}
+                      choices={imageChoices}
+                      max={8}
+                      required
+                      onChange={(images) => set(f.key, images)}
+                    />
+                  ) : f.type === "textarea" ? (
                     <textarea
                       rows={f.key === "content" ? 16 : 5}
                       {...accessibility}
@@ -753,24 +841,6 @@ export function Editor({
                           </option>
                         ))}
                       </Select>
-                      <Link
-                        prefetch={false}
-                        href="/admin/media"
-                        target="_blank"
-                        className="small underlined"
-                      >
-                        Subir imágenes en otra pestaña
-                      </Link>
-                      <button
-                        type="button"
-                        className="text-button small"
-                        onClick={refreshImages}
-                        disabled={refreshingImages}
-                      >
-                        {refreshingImages
-                          ? "Actualizando…"
-                          : "Actualizar biblioteca"}
-                      </button>
                     </div>
                   ) : f.type === "lines" || f.type === "images" ? (
                     <>
@@ -898,7 +968,7 @@ export function Editor({
                       }
                     />
                   )}
-                </label>
+                </FieldLabel>
               )}
               {fieldErrors[f.key] && (
                 <p className="field-error" id={`error-${f.key}`}>

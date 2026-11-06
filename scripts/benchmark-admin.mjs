@@ -16,7 +16,7 @@ const routes = [
 let cookie = "";
 async function stats() {
   const rows =
-    await db.$queryRaw`SELECT coalesce(sum(calls),0)::bigint AS calls,coalesce(sum(total_exec_time),0)::float8 AS ms FROM pg_stat_statements WHERE dbid=(SELECT oid FROM pg_database WHERE datname=current_database()) AND query !~ 'pg_stat_statements' AND query ~ '"(Session|User|Product|Category|Order|Media|Page|Coupon|Audit)"'`;
+    await db.$queryRaw`SELECT coalesce(sum(calls),0)::bigint AS calls,coalesce(sum(total_exec_time),0)::float8 AS ms FROM pg_stat_statements WHERE dbid=(SELECT oid FROM pg_database WHERE datname=current_database()) AND query !~ 'pg_stat_statements' AND query ~ '"(Session|User|Product|ProductVariant|Category|Order|Media|Page|Coupon|Audit)"'`;
   return { calls: Number(rows[0].calls), ms: Number(rows[0].ms) };
 }
 try {

@@ -350,6 +350,7 @@ export function CheckoutForm({
         idempotencyKey: key,
         items: items.map((i) => ({
           productId: i.product.id,
+          ...(i.variantId ? { variantId: i.variantId } : {}),
           quantity: i.quantity,
           finish: i.finish,
         })),
@@ -495,6 +496,8 @@ export function CheckoutForm({
                     coupon,
                     items: items.map((i) => ({
                       productId: i.product.id,
+                      ...(i.variantId ? { variantId: i.variantId } : {}),
+                      finish: i.finish,
                       quantity: i.quantity,
                     })),
                   }),
@@ -527,7 +530,10 @@ export function CheckoutForm({
       <aside className="summary">
         <h2>Tu pedido</h2>
         {items.map((i) => (
-          <div className="checkout-line" key={i.product.id + i.finish}>
+          <div
+            className="checkout-line"
+            key={i.product.id + (i.variantId || i.finish)}
+          >
             <span>
               {i.product.name} × {i.quantity}
               <small>{i.finish}</small>

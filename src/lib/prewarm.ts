@@ -1,3 +1,4 @@
+import { carouselImages } from "./shared";
 import { readPublishedSnapshot } from "./published";
 import type { PublicationResource } from "./publication";
 export async function publicWarmupManifest(resource?: PublicationResource) {
@@ -27,12 +28,19 @@ export async function publicWarmupManifest(resource?: PublicationResource) {
     resource === "pages"
       ? []
       : [
-          snapshot.settings.heroImage,
+          ...carouselImages(snapshot.settings),
           ...snapshot.categories.map((c) => c.image),
-          ...snapshot.products.map((p) => p.image),
+          ...snapshot.products.flatMap((p) => [
+            p.image,
+            ...(p.variants || []).map((variant) => variant.image),
+          ]),
         ];
   const images = [...new Set(sources.filter(Boolean))].flatMap((src) =>
-    [360, 640, ...(src === snapshot.settings.heroImage ? [1440] : [])].map(
+    [
+      360,
+      640,
+      ...(carouselImages(snapshot.settings).includes(src) ? [1440] : []),
+    ].map(
       (width) =>
         `/_next/image?${new URLSearchParams({ url: src, w: String(width), q: "75" })}`,
     ),
@@ -78,10 +86,12 @@ export async function prewarmPublication(resource?: PublicationResource) {
       }
     }),
   );
-  if (failures.length)
+  const cancelled = !(await isCurrent());
+  if (failures.length && !cancelled)
     throw new Error(`No se pudo precargar: ${failures.join(", ")}`);
   return {
     version: manifest.version,
+    cancelled,
     pages: manifest.routes.length,
     images: manifest.images.length,
   };

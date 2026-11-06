@@ -1,5 +1,10 @@
 import { readFile } from "node:fs/promises";
-import { defaultSettings, type CardProduct, type Settings } from "./shared";
+import {
+  withSettingsDefaults,
+  defaultSettings,
+  type CardProduct,
+  type Settings,
+} from "./shared";
 
 export type PublicCategory = {
   id: string;
@@ -51,7 +56,7 @@ export function readPublishedSnapshot() {
           throw new Error("La publicación pública no es válida.");
         return {
           ...value,
-          settings: { ...defaultSettings, ...value.settings },
+          settings: withSettingsDefaults(value.settings),
         };
       })
       .catch((error) => {

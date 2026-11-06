@@ -36,6 +36,7 @@ export async function deleteMedia(id: string, actor: string) {
     const url = media.url;
     const rows = await tx.$queryRaw<{ used: boolean }[]>`SELECT (
    EXISTS(SELECT 1 FROM "Product" WHERE "image"=${url} OR ${url}=ANY("gallery")) OR
+   EXISTS(SELECT 1 FROM "ProductVariant" WHERE "active"=true AND ("image"=${url} OR ${url}=ANY("gallery"))) OR
    EXISTS(SELECT 1 FROM "Category" WHERE "image"=${url}) OR
    EXISTS(SELECT 1 FROM "Setting" WHERE position(${url} in "value"::text)>0) OR
    EXISTS(SELECT 1 FROM "Order" WHERE position(${url} in "items"::text)>0) OR

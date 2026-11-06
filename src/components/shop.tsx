@@ -20,13 +20,15 @@ import {
   Check,
   ArrowRight,
 } from "lucide-react";
+import { StoreHeader } from "./store-navigation";
+import type { NavigationGroup } from "@/lib/shared";
 import { RequiredMark } from "./fields";
-import { CardProduct, CartItem, money } from "@/lib/shared";
+import { lowestPrice, CardProduct, CartItem, money } from "@/lib/shared";
 type CartContextType = {
   items: CartItem[];
   ready: boolean;
-  add: (p: CardProduct, q: number, f: string) => void;
-  setQuantity: (id: string, f: string, q: number) => void;
+  add: (p: CardProduct, q: number, f: string, variantId?: string) => void;
+  setQuantity: (id: string, f: string, q: number, variantId?: string) => void;
   clear: () => void;
 };
 const CartContext = createContext<CartContextType>(null!);
@@ -56,18 +58,38 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (ready) localStorage.setItem("jhamor-cart", JSON.stringify(items));
   }, [items, ready]);
-  const add = (product: CardProduct, quantity: number, finish: string) =>
+  const add = (
+    product: CardProduct,
+    quantity: number,
+    finish: string,
+    variantId?: string,
+  ) =>
     setItems((old) => {
       const existing = old.find(
-        (i) => i.product.id === product.id && i.finish === finish,
+        (i) =>
+          i.product.id === product.id &&
+          (variantId
+            ? i.variantId === variantId
+            : !i.variantId && i.finish === finish),
       );
       return existing
         ? old.map((i) =>
             i === existing
-              ? { ...i, quantity: Math.min(20, i.quantity + quantity) }
+              ? {
+                  ...i,
+                  product,
+                  finish,
+                  quantity: Math.min(
+                    product.madeToOrder ? 20 : Math.min(20, product.stock),
+                    i.quantity + quantity,
+                  ),
+                }
               : i,
           )
-        : [...old, { product, quantity, finish }].slice(0, 30);
+        : [
+            ...old,
+            { product, quantity, finish, ...(variantId ? { variantId } : {}) },
+          ].slice(0, 30);
     });
   return (
     <CartContext.Provider
@@ -75,12 +97,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
         items,
         ready,
         add,
-        setQuantity: (id, f, q) =>
+        setQuantity: (id, f, q, variantId) =>
           setItems((old) =>
             q <= 0
-              ? old.filter((i) => i.product.id !== id || i.finish !== f)
+              ? old.filter(
+                  (i) =>
+                    i.product.id !== id ||
+                    i.finish !== f ||
+                    i.variantId !== variantId,
+                )
               : old.map((i) =>
-                  i.product.id === id && i.finish === f
+                  i.product.id === id &&
+                  i.finish === f &&
+                  i.variantId === variantId
                     ? { ...i, quantity: Math.min(20, q) }
                     : i,
                 ),
@@ -92,75 +121,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
     </CartContext.Provider>
   );
 }
-export function Header({ brand }: { brand: string }) {
-  const [open, setOpen] = useState(false);
-  const path = usePathname();
+export function Header({
+  brand,
+  groups,
+}: {
+  brand: string;
+  groups: NavigationGroup[];
+}) {
   const { items } = useCart();
-  useEffect(() => setOpen(false), [path]);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, []);
   return (
-    <>
-      <header className="header">
-        <button
-          className="icon-button mobile-menu"
-          aria-label={open ? "Cerrar menú" : "Abrir menú"}
-          aria-expanded={open}
-          onClick={() => setOpen(!open)}
-        >
-          {open ? <X /> : <Menu />}
-        </button>
-        <Link href="/" className="wordmark" aria-label={`${brand}, inicio`}>
-          {brand}
-          <small>INTERIORES & MOBILIARIO</small>
-        </Link>
-        <nav
-          className={open ? "nav open" : "nav"}
-          aria-label="Navegación principal"
-        >
-          {[
-            ["/productos", "Colección"],
-            ["/productos?categoria=sala", "Sala"],
-            ["/productos?categoria=comedor", "Comedor"],
-            ["/productos?categoria=dormitorio", "Dormitorio"],
-            ["/nosotros", "Nuestra esencia"],
-          ].map(([href, text]) => (
-            <Link
-              key={text}
-              href={href}
-              prefetch={false}
-              className={path === href ? "active" : ""}
-            >
-              {text}
-            </Link>
-          ))}
-        </nav>
-        <div className="header-actions">
-          <Link
-            href="/mi-cuenta"
-            aria-label="Mi cuenta"
-            className="icon-button"
-          >
-            <UserRound size={21} />
-          </Link>
-          <Link
-            href="/carrito"
-            className="icon-button cart-icon"
-            aria-label={`Bolsa, ${items.reduce((t, i) => t + i.quantity, 0)} productos`}
-          >
-            <ShoppingBag size={21} />
-            {items.length > 0 && (
-              <b>{items.reduce((t, i) => t + i.quantity, 0)}</b>
-            )}
-          </Link>
-        </div>
-      </header>
-    </>
+    <StoreHeader
+      brand={brand}
+      groups={groups}
+      count={items.reduce((total, item) => total + item.quantity, 0)}
+    />
   );
 }
 export function ProductCard({
@@ -170,43 +144,84 @@ export function ProductCard({
   product: CardProduct;
   priority?: boolean;
 }) {
+  const [variantId, setVariantId] = useState<string | null>(null);
+  const variants = p.usesVariants ? p.variants || [] : [];
+  const variant = variants.find((variant) => variant.id === variantId);
+  const href = `/productos/${p.slug}${variant ? "?variante=" + variant.id : ""}`;
   return (
-    <article className="product-card">
-      <Link
-        href={`/productos/${p.slug}`}
-        prefetch={false}
-        className="product-image"
-      >
-        <Image
-          src={p.image}
-          alt={p.name}
-          fill
-          sizes="(max-width: 600px) 47vw, (max-width: 1000px) 45vw, 28vw"
-          priority={priority}
-        />
-        {p.salePrice ? (
-          <span className="badge">Selección especial</span>
-        ) : p.madeToOrder ? (
-          <span className="badge">Hecho para ti</span>
-        ) : null}
-        <span className="product-arrow">
-          <ArrowUpRight size={22} />
-        </span>
-      </Link>
-      <div className="product-meta">
-        {p.category.name} <span>{p.material}</span>
+    <article className="product-card" onMouseLeave={() => setVariantId(null)}>
+      <div className="product-image-wrap">
+        <Link href={href} prefetch={false} className="product-image">
+          <Image
+            src={variant?.image || p.image}
+            alt={variant ? `${p.name} — ${variant.name}` : p.name}
+            fill
+            sizes="(max-width:600px) 44vw, (max-width:1000px) 45vw, 28vw"
+            priority={priority}
+          />
+          {!variants.length &&
+            (p.salePrice ? (
+              <span className="badge">Selección especial</span>
+            ) : p.madeToOrder ? (
+              <span className="badge">Hecho para ti</span>
+            ) : null)}
+          <span className="product-arrow">
+            <ArrowUpRight size={22} />
+          </span>
+        </Link>
+        {variants.length > 0 && (
+          <div
+            className="product-variant-strip"
+            aria-label={`Variantes de ${p.name}`}
+          >
+            {variants.map((item) => (
+              <button
+                type="button"
+                key={item.id}
+                aria-label={`Ver variante ${item.name} de ${p.name}`}
+                title={`${item.name} · ${money(item.price)}${item.stock ? "" : " · Agotado"}`}
+                aria-pressed={variantId === item.id}
+                onMouseEnter={() => setVariantId(item.id)}
+                onFocus={() => setVariantId(item.id)}
+                onClick={() => setVariantId(item.id)}
+              >
+                <Image
+                  src={item.image}
+                  alt={item.name}
+                  width={44}
+                  height={44}
+                  sizes="44px"
+                />
+                <span className="variant-thumb-caption">{item.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
-      <Link href={`/productos/${p.slug}`} prefetch={false}>
+      <div className="product-meta">
+        {p.category.name}
+        <span>{variant?.name || p.material}</span>
+      </div>
+      <Link href={href} prefetch={false}>
         <h3>{p.name}</h3>
       </Link>
       <p className="product-price">
-        {money(p.salePrice ?? p.price)}{" "}
-        {p.salePrice && <del>{money(p.price)}</del>}
+        {variants.length && !variant && <span>Desde </span>}
+        {money(variant?.price ?? lowestPrice(p))}
+        {!variants.length && p.salePrice && <del>{money(p.price)}</del>}
       </p>
     </article>
   );
 }
-export function ProductPurchase({ product: p }: { product: CardProduct }) {
+export function ProductPurchase({
+  product: p,
+  variantId,
+  variantName,
+}: {
+  product: CardProduct;
+  variantId?: string;
+  variantName?: string;
+}) {
   const [quantity, setQuantity] = useState(1);
   const [finish, setFinish] = useState(p.finishes[0] || "");
   const [added, setAdded] = useState(false);
@@ -214,7 +229,7 @@ export function ProductPurchase({ product: p }: { product: CardProduct }) {
   const max = p.madeToOrder ? 20 : Math.min(20, p.stock);
   return (
     <div className="purchase">
-      {p.finishes.length > 0 && (
+      {!variantId && p.finishes.length > 0 && (
         <fieldset>
           <legend>
             Acabado
@@ -260,7 +275,7 @@ export function ProductPurchase({ product: p }: { product: CardProduct }) {
           className="button"
           disabled={max === 0}
           onClick={() => {
-            add(p, quantity, finish);
+            add(p, quantity, variantName ?? finish, variantId);
             setAdded(true);
           }}
         >
@@ -312,7 +327,10 @@ export function CartView() {
     <div className="cart-layout">
       <div>
         {items.map((i) => (
-          <article className="cart-line" key={i.product.id + i.finish}>
+          <article
+            className="cart-line"
+            key={i.product.id + (i.variantId || i.finish)}
+          >
             <Link href={`/productos/${i.product.slug}`}>
               <Image
                 src={i.product.image}
@@ -331,7 +349,12 @@ export function CartView() {
                 <button
                   aria-label={`Quitar una unidad de ${i.product.name}`}
                   onClick={() =>
-                    setQuantity(i.product.id, i.finish, i.quantity - 1)
+                    setQuantity(
+                      i.product.id,
+                      i.finish,
+                      i.quantity - 1,
+                      i.variantId,
+                    )
                   }
                 >
                   <Minus size={14} />
@@ -339,9 +362,17 @@ export function CartView() {
                 <span>{i.quantity}</span>
                 <button
                   aria-label={`Añadir una unidad de ${i.product.name}`}
-                  disabled={i.quantity >= 20}
+                  disabled={
+                    i.quantity >=
+                    (i.product.madeToOrder ? 20 : Math.min(20, i.product.stock))
+                  }
                   onClick={() =>
-                    setQuantity(i.product.id, i.finish, i.quantity + 1)
+                    setQuantity(
+                      i.product.id,
+                      i.finish,
+                      i.quantity + 1,
+                      i.variantId,
+                    )
                   }
                 >
                   <Plus size={14} />
@@ -354,7 +385,9 @@ export function CartView() {
               </strong>
               <button
                 className="text-button"
-                onClick={() => setQuantity(i.product.id, i.finish, 0)}
+                onClick={() =>
+                  setQuantity(i.product.id, i.finish, 0, i.variantId)
+                }
               >
                 Eliminar
               </button>

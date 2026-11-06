@@ -1,0 +1,182 @@
+{
+  "at": "2026-11-06T22:47:20.828Z",
+  "base": "https://jhamor.purprum.com",
+  "notes": "Read-only complete HTML requests. Each request checks current permissions. Aggregate pg_stat_statements deltas may include concurrent activity; no SQL parameters or response bodies are recorded.",
+  "results": [
+    {
+      "route": "/admin",
+      "cold": {
+        "ms": 73.7,
+        "queries": 1,
+        "sqlMs": 0.06
+      },
+      "repeat": [
+        {
+          "ms": 57.1,
+          "queries": 1,
+          "sqlMs": 0.08
+        },
+        {
+          "ms": 66.8,
+          "queries": 1,
+          "sqlMs": 0.05
+        },
+        {
+          "ms": 71.4,
+          "queries": 1,
+          "sqlMs": 0.05
+        }
+      ]
+    },
+    {
+      "route": "/admin/productos",
+      "cold": {
+        "ms": 44.2,
+        "queries": 1,
+        "sqlMs": 0.07
+      },
+      "repeat": [
+        {
+          "ms": 56.3,
+          "queries": 1,
+          "sqlMs": 0.06
+        },
+        {
+          "ms": 70.7,
+          "queries": 1,
+          "sqlMs": 0.68
+        },
+        {
+          "ms": 66.4,
+          "queries": 1,
+          "sqlMs": 0.04
+        }
+      ]
+    },
+    {
+      "route": "/admin/pedidos",
+      "cold": {
+        "ms": 77.3,
+        "queries": 2,
+        "sqlMs": 0.79
+      },
+      "repeat": [
+        {
+          "ms": 62.6,
+          "queries": 1,
+          "sqlMs": 0.05
+        },
+        {
+          "ms": 66.4,
+          "queries": 1,
+          "sqlMs": 0.06
+        },
+        {
+          "ms": 33.6,
+          "queries": 1,
+          "sqlMs": 0.05
+        }
+      ]
+    },
+    {
+      "route": "/admin/clientes",
+      "cold": {
+        "ms": 35.3,
+        "queries": 2,
+        "sqlMs": 0.13
+      },
+      "repeat": [
+        {
+          "ms": 34,
+          "queries": 1,
+          "sqlMs": 0.1
+        },
+        {
+          "ms": 38.2,
+          "queries": 1,
+          "sqlMs": 0.06
+        },
+        {
+          "ms": 40.4,
+          "queries": 1,
+          "sqlMs": 0.09
+        }
+      ]
+    },
+    {
+      "route": "/admin/media",
+      "cold": {
+        "ms": 54.8,
+        "queries": 1,
+        "sqlMs": 0.05
+      },
+      "repeat": [
+        {
+          "ms": 46,
+          "queries": 1,
+          "sqlMs": 0.05
+        },
+        {
+          "ms": 42.1,
+          "queries": 1,
+          "sqlMs": 0.06
+        },
+        {
+          "ms": 38.7,
+          "queries": 1,
+          "sqlMs": 0.06
+        }
+      ]
+    },
+    {
+      "route": "/admin/configuracion",
+      "cold": {
+        "ms": 37.4,
+        "queries": 1,
+        "sqlMs": 0.05
+      },
+      "repeat": [
+        {
+          "ms": 65.2,
+          "queries": 1,
+          "sqlMs": 0.05
+        },
+        {
+          "ms": 44.2,
+          "queries": 1,
+          "sqlMs": 0.06
+        },
+        {
+          "ms": 38.7,
+          "queries": 1,
+          "sqlMs": 0.05
+        }
+      ]
+    },
+    {
+      "route": "/admin/historial",
+      "cold": {
+        "ms": 42.5,
+        "queries": 2,
+        "sqlMs": 0.08
+      },
+      "repeat": [
+        {
+          "ms": 35.4,
+          "queries": 1,
+          "sqlMs": 0.06
+        },
+        {
+          "ms": 46.9,
+          "queries": 1,
+          "sqlMs": 0.05
+        },
+        {
+          "ms": 42.1,
+          "queries": 1,
+          "sqlMs": 0.06
+        }
+      ]
+    }
+  ]
+}

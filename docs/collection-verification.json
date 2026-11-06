@@ -1,0 +1,58 @@
+{
+  "documentedAt": "2026-11-06T22:47:44.189Z",
+  "image": "sha256:1c175e4af7d2e2fa4705ff67a67cb13d6afc77dbd2ef476e772d3c1f28065603",
+  "unitTests": {
+    "passed": 17,
+    "files": 4
+  },
+  "browserSuite": {
+    "passed": 18,
+    "seconds": 57.1,
+    "note": "Full regression suite passed with the shared-layout invalidation fix. The final build then narrowed coupon query fields and removed unused imports; its affected cases were rerun below."
+  },
+  "finalImageBrowserTests": {
+    "passed": 3,
+    "seconds": 13.7,
+    "files": [
+      "collection-experience.spec.ts",
+      "publication.spec.ts"
+    ]
+  },
+  "typescript": "passed, including the final Docker production build",
+  "checks": [
+    "Carousel edited and reordered in the admin UI; image-only home with previous/next controls",
+    "Collection previews capped at six actual products; category with one product shows one",
+    "Header hover stays open over thumbnails, mobile quick links work, no hover API requests",
+    "Variants created in the admin UI with independent names, prices, stock and ordered galleries",
+    "Card thumbnails preview selected variants and link to them; detail gallery and price update locally",
+    "Cart keeps variants separate and updates quantities by variant identity",
+    "Concurrent orders cannot reserve the same last unit; authoritative price ignores forged client data",
+    "Idempotent retry does not reserve again; cancellation restores the purchased variant once, including retired variants",
+    "Coupon calculation uses variant price; unknown variant is rejected",
+    "Referenced variant gallery image cannot be deleted",
+    "Spacious account with empty and populated order states, desktop and mobile; existing order isolation tests retained",
+    "Removed products return 404 and unpublished pages disappear; public navigation needs no SQL"
+  ],
+  "migration": {
+    "name": "20261106190000_product_variants",
+    "appliedToProduction": true,
+    "destructiveResetInProduction": false
+  },
+  "backupsUTC": [
+    "20261106T222315Z",
+    "20261106T224610Z"
+  ],
+  "production": {
+    "at": "2026-11-06T22:46:57.309Z",
+    "base": "https://jhamor.purprum.com",
+    "carousel": true,
+    "navigation": true,
+    "hoverApiRequests": 0,
+    "variantEditor": true,
+    "accountDesktop": true,
+    "accountMobile": true,
+    "javascriptErrors": []
+  },
+  "productionCommercialTestRecordsCreated": false,
+  "evidenceUsesSyntheticQaAccounts": true
+}

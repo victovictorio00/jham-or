@@ -147,18 +147,21 @@ test("cover preview uses a thumbnail without API calls and refresh keeps unsaved
     .getByRole("button", { name: "Iniciar sesión", exact: true })
     .click();
   await expect(page).toHaveURL("/admin/configuracion");
-  const title = page.getByLabel("Título de portada", { exact: true });
+  const title = page.getByLabel("Nombre de la marca", { exact: true });
   const oldTitle = await title.inputValue();
-  const select = page.getByLabel("Fotografía de portada", { exact: true });
-  const previous = await selectedValue(select);
+  const carousel = page.getByRole("group", {
+    name: "Carrusel de portada",
+    exact: true,
+  });
+  const previousCount = await carousel.locator(".image-list-grid li").count();
   let apiCalls = 0,
     rscCalls = 0;
   page.on("request", (request) => {
     if (new URL(request.url()).pathname.startsWith("/api/")) apiCalls++;
     if (request.headers()["rsc"] === "1") rscCalls++;
   });
-  await chooseOption(page, "Fotografía de portada", image.url);
-  const preview = page.getByAltText("Imagen seleccionada", { exact: true });
+  await chooseOption(page, "Añadir imagen a carrusel de portada", image.url);
+  const preview = carousel.locator(".image-list-grid li").last().locator("img");
   await expect(preview).toHaveAttribute("src", image.thumbnailUrl);
   await expect
     .poll(() =>
@@ -180,7 +183,12 @@ test("cover preview uses a thumbnail without API calls and refresh keeps unsaved
   expect(rscCalls).toBe(0);
   await expect(title).toHaveValue("Texto sin guardar de prueba");
   await title.fill(oldTitle);
-  await chooseOption(page, "Fotografía de portada", previous);
+  await carousel
+    .getByRole("button", {
+      name: `Quitar imagen ${previousCount + 1}`,
+      exact: true,
+    })
+    .click();
   await page.goto("/admin/media");
   page.on("dialog", (dialog) => dialog.accept());
   const card = page.getByRole("article", { name: image.name, exact: true });
@@ -210,7 +218,11 @@ test("deletion protects used images and rejects a removed image in a stale edito
     where: { key: "store" },
   });
   const image = await upload(admin);
-  const changed = { ...(original.value as object), heroImage: image.url };
+  const changed = {
+    ...(original.value as object),
+    heroImage: image.url,
+    heroImages: [image.url],
+  };
   expect(
     (await admin.put("/api/admin/settings", { data: changed })).status(),
   ).toBe(200);
@@ -275,7 +287,11 @@ test("assigning and deleting concurrently cannot publish a missing image", async
   const image = await upload(admin);
   const [assign, remove] = await Promise.all([
     admin.put("/api/admin/settings", {
-      data: { ...(original.value as object), heroImage: image.url },
+      data: {
+        ...(original.value as object),
+        heroImage: image.url,
+        heroImages: [image.url],
+      },
     }),
     admin.delete("/api/admin/media/" + image.id),
   ]);

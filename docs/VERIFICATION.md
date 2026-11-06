@@ -1,3 +1,23 @@
+# Carrusel, navegación y variantes independientes — 6 de noviembre de 2026
+
+Publicados el carrusel de imágenes editable desde Diseño y tienda, los accesos rápidos de hasta seis productos por colección y las variantes con precio, stock y galería propios. Mi cuenta tiene una bienvenida amplia, accesos, pedidos y perfil adaptados a escritorio y móvil. Se retiró el bloque «Hagamos espacio para lo que importa / Tu próximo capítulo en casa» de la portada.
+
+- **17 pruebas unitarias aprobadas**, en cuatro archivos; TypeScript y compilación Docker aprobados.
+- **18 pruebas de navegador aprobadas** en la regresión completa, incluida la corrección de invalidación del layout al retirar productos. Después se redujo la selección de columnas de la consulta de cupones y se quitaron imports sin uso: sobre la imagen final se repitieron **tres pruebas afectadas**, todas aprobadas (experiencia completa de variantes y las dos de publicación).
+- Variantes creadas desde el panel con fotos, precios y existencias diferentes. La bolsa las mantiene separadas; ficha y miniaturas cambian sin consultar la API. Compra concurrente de la última unidad, reintento idempotente y cancelación de una variante retirada comprobados en QA. El servidor ignora precios y nombres falsificados, calcula cupones con el importe de la variante y protege sus fotos referenciadas.
+- En producción: carrusel y controles, navegación sin consultas API al pasar el mouse, editor de variantes con campos obligatorios y galería, Mi cuenta amplia y móvil sin desbordamiento. Menú administrativo contraíble, preferencia conservada, selección de imagen con **0 peticiones API** y actualización de biblioteca con **1**, sin perder lo escrito. Selección por arrastre y acumulación de grupos comprobadas sin subir archivos de prueba al servidor real.
+- **105 respuestas HTML públicas: 0 consultas SQL públicas adicionales**, incluyendo ProductVariant en el contador. Medianas de 25,3 a 41,3 ms desde este servidor contra HTTPS; estas cifras describen esta muestra, no todas las conexiones de clientes.
+- Siete pantallas administrativas medidas con cuatro visitas cada una: las tres visitas repetidas de cada pantalla realizaron **una consulta de sesión/permisos**, reutilizando los datos privados en caché. Mayor tiempo de esas visitas: 71,4 ms en esta muestra.
+- Migración aditiva `20261106190000_product_variants` aplicada. Copias privadas previas completadas a las 22:23:15 y 22:46:10 UTC. No se reinició ni vació la base real, ni se crearon muebles, variantes o pedidos comerciales de prueba en producción. Aplicación y PostgreSQL saludables tras el despliegue.
+
+Imagen final publicada y verificada: `sha256:1c175e4af7d2e2fa4705ff67a67cb13d6afc77dbd2ef476e772d3c1f28065603`.
+
+Evidencias: [resumen de pruebas](collection-verification.json), [verificación del dominio](collection-production-verification.json), [administración](admin-production-verification.json), [diseño y selección por grupos](editorial-production-verification.json), [SQL/HTTP público](performance.json) y [medición administrativa](admin-collection-performance.json).
+
+Capturas de QA con datos sintéticos: [portada](carousel-home.png), [accesos rápidos](navigation-quick-access.png), [variantes y galerías](product-independent-variants.png), [Mi cuenta](account-dashboard.png), [cuenta móvil](account-dashboard-mobile.png) y [pedidos en móvil](account-orders-mobile.png). La compra y las variantes completas se prueban en la base aislada; la comprobación de producción inspecciona formularios sin guardarlos y no crea registros comerciales.
+
+Documentación detallada: [JF-34](historial/JF-34-carrusel-y-accesos-rapidos-del-catalogo.md), [JF-35](historial/JF-35-variantes-con-precio-stock-y-galeria-propios.md) y [JF-36](historial/JF-36-mi-cuenta-amplia-y-cierre-de-portada.md). Las mediciones siguientes se conservan como antecedentes.
+
 # Creación, campos obligatorios y selectores — 6 de noviembre de 2026
 
 Corregida la creación desde Clientes y la autorización para que administradores creen cuentas de cliente. La creación o modificación de cuentas del equipo continúa reservada al propietario. El resto de los formularios de creación se ha comprobado de extremo a extremo.

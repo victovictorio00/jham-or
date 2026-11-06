@@ -11,6 +11,8 @@ function refresh(resource: PublicationResource) {
   invalidate(resource);
   revalidatePath("/sitemap.xml");
   if (resource === "catalog") {
+    // Catalog changes also alter the shared header previews on every page.
+    revalidatePath("/", "layout");
     revalidatePath("/productos/[slug]", "page");
     revalidatePath("/productos");
   }

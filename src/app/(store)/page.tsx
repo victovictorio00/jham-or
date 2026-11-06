@@ -1,3 +1,5 @@
+import { HomeCarousel } from "@/components/home-carousel";
+import { carouselImages } from "@/lib/shared";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -21,52 +23,7 @@ export default async function Home() {
   );
   return (
     <>
-      <section className="hero" aria-label="La colección Jham-or">
-        <div className="hero-copy">
-          <p className="eyebrow">
-            <span className="editorial-rule" />
-            EL ARTE DE HABITAR
-          </p>
-          <h1>
-            {s.heroTitle.split("\n").map((line, i) => (
-              <span key={i}>{line}</span>
-            ))}
-          </h1>
-          <p>{s.heroText}</p>
-          <Link href="/productos" className="button">
-            Descubre la colección <ArrowUpRight size={18} />
-          </Link>
-          <div className="hero-foot">
-            <span className="hero-seal" aria-hidden="true">
-              J.
-            </span>
-            <span>
-              Muebles con carácter.
-              <br />
-              <strong>Espacios que se sienten propios.</strong>
-            </span>
-          </div>
-        </div>
-        <div className="hero-visual">
-          <Image
-            className="hero-photo"
-            src={s.heroImage || "/images/hero.webp"}
-            alt="Sala luminosa con muebles en tonos naturales y detalles de madera"
-            fill
-            sizes="(max-width:850px) 100vw, 58vw"
-            priority
-          />
-          <div className="hero-image-note">
-            <span>LA BELLEZA DE LO COTIDIANO</span>
-            <span>
-              Diseño para vivirlo <ArrowUpRight size={17} />
-            </span>
-          </div>
-        </div>
-        <div className="hero-edition" aria-hidden="true">
-          JHAM-OR / OBJETOS PARA EL HOGAR
-        </div>
-      </section>
+      <HomeCarousel images={carouselImages(s)} />
       <div className="value-strip">
         <span>
           <Leaf size={18} />
@@ -89,10 +46,10 @@ export default async function Home() {
         <div className="section-heading">
           <div>
             <p className="eyebrow">01 / UNIVERSOS JHAM-OR</p>
-            <h2>
+            <h1>
               Una nueva mirada
               <br />a tu <em>espacio.</em>
-            </h2>
+            </h1>
           </div>
           <p>
             Encuentra el equilibrio entre lo que amas
@@ -218,23 +175,6 @@ export default async function Home() {
             </article>
           ))}
         </div>
-      </section>
-      <section className="invitation">
-        <div>
-          <p className="eyebrow">HAGAMOS ESPACIO PARA LO QUE IMPORTA</p>
-          <h2>
-            Tu próximo capítulo,
-            <br />
-            <em>en casa.</em>
-          </h2>
-          <p>Conversemos sobre ese espacio que imaginas.</p>
-          <Link href="/contacto" className="button light-button">
-            Conversemos <ArrowUpRight size={18} />
-          </Link>
-        </div>
-        <span className="invitation-mark" aria-hidden="true">
-          J.
-        </span>
       </section>
     </>
   );

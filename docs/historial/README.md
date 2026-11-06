@@ -49,6 +49,9 @@ Fecha de esta serie documental: **5 de noviembre de 2026**. Referencia del códi
 | JF-31 | [Arrastre de grupos y subida sin recompresión](JF-31-arrastre-de-grupos-y-subida-sin-recompresion.md) | Selección acumulativa, arrastre, cola editable y vía rápida de WebP validado. |
 | JF-32 | [Creación y campos obligatorios](JF-32-creacion-y-validacion-de-campos-obligatorios.md) | Alta de clientes, enlaces sugeridos, asteriscos y errores asociados a cada campo. |
 | JF-33 | [Selectores con búsqueda y vistas previas](JF-33-selectores-con-busqueda-y-vistas-previas.md) | Listas diseñadas, búsqueda local, miniaturas, teclado y adaptación móvil. |
+| JF-34 | [Carrusel y accesos rápidos](JF-34-carrusel-y-accesos-rapidos-del-catalogo.md) | Hasta seis miniaturas por categoría y carrusel editable mediante imágenes. |
+| JF-35 | [Variantes con precio, stock y fotos propios](JF-35-variantes-con-precio-stock-y-galeria-propios.md) | Modelo, administración, fotos, bolsa, reserva y cancelación independiente. |
+| JF-36 | [Mi cuenta amplia y cierre de portada](JF-36-mi-cuenta-amplia-y-cierre-de-portada.md) | Panel personal, pedidos, perfil y retirada del bloque solicitado. |
 
 ## Rutas de lectura sugeridas
 
@@ -60,7 +63,7 @@ Fecha de esta serie documental: **5 de noviembre de 2026**. Referencia del códi
 
 ## Cómo continuar el historial
 
-El próximo número disponible es **JF-34**. Crea `JF-34-titulo-descriptivo.md`, explica el cambio con sus motivos y evidencias y añade su fila a este índice. No renumeres los documentos existentes para insertar un tema nuevo.
+El próximo número disponible es **JF-37**. Crea `JF-37-titulo-descriptivo.md`, explica el cambio con sus motivos y evidencias y añade su fila a este índice. No renumeres los documentos existentes para insertar un tema nuevo.
 
 Una evolución posterior se documenta con otro número y un enlace al antecedente. Los datos comerciales del panel mantienen su auditoría en la aplicación; no se ha instalado un generador automático de Markdown por cada producto editado.
 

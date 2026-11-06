@@ -176,7 +176,23 @@ export async function adminRecord(section: string, id: string) {
     [adminSectionTag[section]],
     async () => {
       if (section === "productos")
-        return db.product.findUnique({ where: { id } });
+        return db.product.findUnique({
+          where: { id },
+          include: {
+            variants: {
+              where: { active: true },
+              orderBy: { position: "asc" },
+              select: {
+                id: true,
+                name: true,
+                price: true,
+                stock: true,
+                image: true,
+                gallery: true,
+              },
+            },
+          },
+        });
       if (section === "categorias")
         return db.category.findUnique({ where: { id } });
       if (section === "paginas") return db.page.findUnique({ where: { id } });

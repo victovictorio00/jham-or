@@ -45,3 +45,18 @@ Páginas y SEO permite guardar borradores, publicar texto y definir descripción
 Cupones permite definir código, descuento porcentual, compra mínima y vencimiento. El descuento se aplica al subtotal de productos. El servidor lo valida otra vez al confirmar.
 
 Historial de cambios registra acciones de administración, incluyendo cambios de estado y de pago. Las sesiones, contraseñas y claves no se publican en ese historial.
+
+
+## Carrusel de portada y variantes
+
+En **Diseño y tienda → Carrusel de portada**, añade de una a ocho imágenes de la biblioteca. Las flechas cambian el orden y la papelera quita la imagen del carrusel sin borrar el archivo. Guarda para publicar. La portada muestra únicamente las fotografías, con controles y avance automático; respeta la preferencia de movimiento reducido.
+
+El enlace **Subir imágenes** abre la biblioteca en otra pestaña. Puedes arrastrar grupos de fotografías o acumular selecciones antes de subirlas. Al volver al formulario, **Actualizar biblioteca** realiza una sola petición y conserva lo que estás editando. Seleccionar una imagen ya disponible no consulta la API.
+
+En **Muebles → Nuevo/Editar → Variantes**, pulsa **Añadir variante**. Cada variante necesita nombre, precio en soles, stock y al menos una foto. Admite hasta veinte variantes por mueble y diez imágenes por variante; la primera será su miniatura y fotografía principal. Usa las flechas para ordenar las fotos. Los campos obligatorios muestran (*). Al activar variantes, el precio y stock generales se calculan a partir de ellas; los controles generales se sustituyen por los campos de cada variante.
+
+El cliente puede previsualizar las variantes desde las miniaturas de la tarjeta y elegirlas dentro de la ficha. Cambian su precio, disponibilidad y galería. El carrito mantiene separadas las variantes de un mismo mueble y el servidor confirma precio y stock al comprar. Quitar una variante del editor la retira de la venta; los pedidos anteriores conservan su descripción, precio y fotografía. Cancelar un pedido repone la variante que se compró, sin alterar otra.
+
+La biblioteca protege las fotografías usadas por variantes activas, carruseles y pedidos históricos. Para borrar un archivo vinculado, sustituye primero sus referencias editables; una referencia en un pedido histórico debe conservarse.
+
+Los menús de colección muestran hasta seis productos reales de cada categoría. Se preparan con la publicación del catálogo: pasar el mouse, cambiar una variante o elegir una foto no provoca consultas SQL. Mi cuenta presenta los pedidos y datos personales en un diseño amplio, adaptable a móviles; esa información sigue siendo privada.

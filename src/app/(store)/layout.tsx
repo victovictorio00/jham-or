@@ -3,7 +3,7 @@ import "../storefront.css";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Header } from "@/components/shop";
-import { settings } from "@/lib/catalog";
+import { settings, navigationPreviews } from "@/lib/catalog";
 const editorial = localFont({
   src: [
     {
@@ -32,13 +32,13 @@ export default async function StoreLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const s = await settings();
+  const [s, groups] = await Promise.all([settings(), navigationPreviews()]);
   return (
     <div className={`storefront ${editorial.variable} ${modern.variable}`}>
       <a href="#contenido" className="skip-link">
         Saltar al contenido
       </a>
-      <Header brand={s.brand} />
+      <Header brand={s.brand} groups={groups} />
       <main id="contenido">{children}</main>
       <footer className="footer">
         <div className="footer-heading">

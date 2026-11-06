@@ -24,10 +24,8 @@ try {
   await page.goto(base);
   await page.evaluate(() => document.fonts.ready);
   report.desktopEditorialLayout = await page
-    .locator(".hero")
-    .evaluate(
-      (el) => getComputedStyle(el).gridTemplateColumns.split(" ").length === 2,
-    );
+    .locator(".home-carousel")
+    .evaluate((el) => el.getBoundingClientRect().width >= innerWidth - 2);
   report.localFonts = await page
     .locator("h1")
     .evaluate((el) =>
@@ -43,9 +41,8 @@ try {
   report.mobileLayout = await page.evaluate(
     () =>
       document.documentElement.scrollWidth <= innerWidth + 1 &&
-      getComputedStyle(
-        document.querySelector(".hero"),
-      ).gridTemplateColumns.split(" ").length === 1,
+      document.querySelector(".home-carousel").getBoundingClientRect().width <=
+        innerWidth + 1,
   );
   await page.screenshot({ path: "var/design-production-mobile.png" });
   const login = await context.request.post(base + "/api/auth/login", {
