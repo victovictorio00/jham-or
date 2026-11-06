@@ -6,4 +6,4 @@ export const db =
     log:
       process.env.QUERY_LOG === "1" ? [{ emit: "stdout", level: "query" }] : [],
   });
-if (process.env.NODE_ENV !== "production") globalDb.prisma = db;
+globalDb.prisma = db;

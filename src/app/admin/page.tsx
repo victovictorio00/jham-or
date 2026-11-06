@@ -1,41 +1,11 @@
 import Link from "next/link";
-import { db } from "@/lib/db";
+import { adminOverview } from "@/lib/admin-data";
 import { adminPage } from "@/lib/auth";
 import { money, statuses } from "@/lib/shared";
 export default async function Dashboard() {
   await adminPage();
-  const [orders, pending, revenue, products, lowStock, customers] =
-    await Promise.all([
-      db.order.findMany({
-        take: 6,
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          number: true,
-          customerName: true,
-          total: true,
-          status: true,
-          createdAt: true,
-        },
-      }),
-      db.order.count({ where: { status: "PENDING" } }),
-      db.order.aggregate({
-        where: { paymentStatus: "PAID", status: { not: "CANCELLED" } },
-        _sum: { total: true },
-      }),
-      db.product.count({ where: { deletedAt: null } }),
-      db.product.findMany({
-        where: {
-          deletedAt: null,
-          active: true,
-          madeToOrder: false,
-          stock: { lte: 3 },
-        },
-        take: 8,
-        select: { id: true, name: true, stock: true },
-      }),
-      db.user.count({ where: { role: "CUSTOMER" } }),
-    ]);
+  const { orders, pending, revenue, products, lowStock, customers } =
+    await adminOverview();
   return (
     <>
       <div className="admin-title">
@@ -44,27 +14,35 @@ export default async function Dashboard() {
           <h1>Todo en su lugar.</h1>
           <p>Pedidos, catálogo y las próximas tareas de tu tienda.</p>
         </div>
-        <Link href="/admin/productos?edit=new" className="button">
+        <Link
+          prefetch={false}
+          href="/admin/productos?edit=new"
+          className="button"
+        >
           + Añadir mueble
         </Link>
       </div>
       <div className="stats-grid">
-        <Link href="/admin/pedidos?estado=PENDING" className="stat">
+        <Link
+          prefetch={false}
+          href="/admin/pedidos?estado=PENDING"
+          className="stat"
+        >
           <span>Pedidos pendientes</span>
           <strong>{pending}</strong>
           <small>Revisar y confirmar →</small>
         </Link>
         <div className="stat">
           <span>Ingresos registrados</span>
-          <strong>{money(revenue._sum.total || 0)}</strong>
+          <strong>{money(revenue)}</strong>
           <small>Pedidos marcados como pagados, sin cancelados</small>
         </div>
-        <Link href="/admin/productos" className="stat">
+        <Link prefetch={false} href="/admin/productos" className="stat">
           <span>Muebles en catálogo</span>
           <strong>{products}</strong>
           <small>Gestionar colección →</small>
         </Link>
-        <Link href="/admin/clientes" className="stat">
+        <Link prefetch={false} href="/admin/clientes" className="stat">
           <span>Clientes</span>
           <strong>{customers}</strong>
           <small>Cuentas registradas →</small>
@@ -74,7 +52,11 @@ export default async function Dashboard() {
         <section className="panel">
           <div className="section-heading">
             <h2>Pedidos recientes</h2>
-            <Link href="/admin/pedidos" className="text-link small">
+            <Link
+              prefetch={false}
+              href="/admin/pedidos"
+              className="text-link small"
+            >
               Ver todos →
             </Link>
           </div>
@@ -93,7 +75,10 @@ export default async function Dashboard() {
                   {orders.map((o) => (
                     <tr key={o.id}>
                       <td>
-                        <Link href={`/admin/pedidos?edit=${o.id}`}>
+                        <Link
+                          prefetch={false}
+                          href={`/admin/pedidos?edit=${o.id}`}
+                        >
                           JO-{String(o.number).padStart(5, "0")}
                         </Link>
                       </td>
@@ -118,6 +103,7 @@ export default async function Dashboard() {
           {lowStock.length ? (
             lowStock.map((p) => (
               <Link
+                prefetch={false}
                 href={`/admin/productos?edit=${p.id}`}
                 className="stock-alert"
                 key={p.id}
@@ -136,15 +122,25 @@ export default async function Dashboard() {
             precios, cobertura de envío y contacto antes de anunciar la
             apertura.
           </p>
-          <Link className="text-link" href="/admin/configuracion">
+          <Link
+            prefetch={false}
+            className="text-link"
+            href="/admin/configuracion"
+          >
             Completar información →
           </Link>
         </section>
       </div>
       <section className="quick-links">
-        <Link href="/admin/media">Subir fotografías ↗</Link>
-        <Link href="/admin/paginas">Revisar políticas ↗</Link>
-        <Link href="/admin/cupones">Crear un cupón ↗</Link>
+        <Link prefetch={false} href="/admin/media">
+          Subir fotografías ↗
+        </Link>
+        <Link prefetch={false} href="/admin/paginas">
+          Revisar políticas ↗
+        </Link>
+        <Link prefetch={false} href="/admin/cupones">
+          Crear un cupón ↗
+        </Link>
       </section>
     </>
   );

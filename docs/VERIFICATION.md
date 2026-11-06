@@ -1,3 +1,22 @@
+# Verificación de consultas y subidas — 6 de noviembre de 2026
+
+Publicado en https://jhamor.purprum.com con selección múltiple de hasta 20 fotos, compresión mediante trabajador, dos transferencias simultáneas, progreso y reintento por archivo. Las listas administrativas se reutilizan hasta que cambian y se han retirado las precargas de pantallas privadas.
+
+- TypeScript y 10 pruebas unitarias aprobadas.
+- 16 pruebas de navegador aprobadas en una base de prueba reiniciada: compra, concurrencia de inventario, permisos, publicación, miniaturas, eliminación, subida múltiple, compresión real y errores parciales.
+- En producción, el resumen pasó de 8 consultas por petición a 2 en la primera y 1 al repetir. Productos pasó de 4 a 3/1; las otras cinco secciones medidas de 3 a 2/1. La consulta restante comprueba la sesión y los permisos actuales.
+- El SQL inicial ya consumía menos de 1 ms por respuesta en la muestra. Los tiempos HTTP no son una medición aislada de la base de datos; no se promete una mejora uniforme de latencia para todas las redes.
+- En QA local, una fotografía JPEG de 1.201.937 bytes se preparó en 161.252 bytes: aproximadamente 86,6 % menos de transferencia. Mediana de subida anterior del original: 294,8 ms; mediana actual con entrada preparada: 227,4 ms. Esta comparación excluye preparación del navegador y no reproduce ancho de banda doméstico.
+- Comprobación del dominio real: menú compacto, persistencia, móvil, selector sin petición API al cambiar portada, actualización de opciones con una petición y sin errores JavaScript.
+- 105 respuestas HTML públicas comprobadas después del despliegue, incluida una búsqueda nueva: 0 consultas SQL públicas adicionales.
+- Copia de seguridad previa completada, servicio saludable y configuración Nginx validada y recargada. No se aplicaron migraciones ni se modificaron productos, pedidos o imágenes reales para medir.
+
+Imagen publicada: `sha256:af9195838c5d9ffeb0dcca1c9ac58b8a4b76be4a31b6439cf96edb96e21387b0`.
+
+Evidencias: [mediciones antes/después](admin-performance-verification.json), [navegador en producción](admin-production-verification.json), [SQL público](performance.json), [pruebas nuevas](../tests/e2e/admin-performance.spec.ts), [pruebas de caché](../tests/admin-cache.test.ts), [JF-28](historial/JF-28-consultas-y-cache-de-administracion.md) y [JF-29](historial/JF-29-subida-multiple-y-optimizacion-de-imagenes.md).
+
+Los resultados siguientes se conservan como antecedentes de entregas anteriores.
+
 # Verificación del panel — 5 de noviembre de 2026
 
 Se publicó el menú contraíble con navegación por iconos, se retiró la cabecera decorativa, se incorporó eliminación de imágenes sin referencias y se añadieron miniaturas para biblioteca y portada.

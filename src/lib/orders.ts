@@ -1,3 +1,4 @@
+import { invalidateAdmin } from "./admin-cache";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { AppError } from "./auth";
@@ -27,8 +28,10 @@ export async function placeOrder(
   input: unknown,
 ) {
   const data = orderSchema.parse(input);
+  let changed = false;
   let stockChanged = false;
   const order = await transaction(async (tx) => {
+    changed = false;
     stockChanged = false;
     const existing = await tx.order.findUnique({
       where: { idempotencyKey: data.idempotencyKey },
@@ -120,6 +123,7 @@ export async function placeOrder(
       discount = Math.floor((subtotal * coupon.percent) / 100);
       code = coupon.code;
     }
+    changed = true;
     const created = await tx.order.create({
       data: {
         userId: user.id,
@@ -152,6 +156,8 @@ export async function placeOrder(
     if (stockChanged) await markPublication(tx, "catalog");
     return created;
   });
+  if (changed) invalidateAdmin("orders", "customers", "overview", "audit");
+  if (stockChanged) invalidateAdmin("products");
   if (stockChanged) await publishAndInvalidate("catalog");
   else await retryPendingPublication("catalog");
   return order;
@@ -172,8 +178,10 @@ export async function changeOrder(id: string, actor: string, input: unknown) {
       note: z.string().trim().max(2000).default(""),
     })
     .parse(input);
+  let changed = false;
   let stockChanged = false;
   const result = await transaction(async (tx) => {
+    changed = false;
     stockChanged = false;
     const order = await tx.order.findUnique({ where: { id } });
     if (!order) throw new AppError(404, "Pedido no encontrado.");
@@ -205,6 +213,7 @@ export async function changeOrder(id: string, actor: string, input: unknown) {
         }
       }
     }
+    changed = true;
     const updated = await tx.order.update({
       where: { id },
       data: {
@@ -234,6 +243,8 @@ export async function changeOrder(id: string, actor: string, input: unknown) {
     if (stockChanged) await markPublication(tx, "catalog");
     return updated;
   });
+  if (changed) invalidateAdmin("orders", "customers", "overview", "audit");
+  if (stockChanged) invalidateAdmin("products");
   if (stockChanged) await publishAndInvalidate("catalog");
   else await retryPendingPublication("catalog");
   return result;

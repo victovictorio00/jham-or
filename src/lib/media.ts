@@ -1,3 +1,4 @@
+import { invalidateAdmin } from "./admin-cache";
 import { unlink } from "node:fs/promises";
 import type { Prisma } from "@prisma/client";
 import { transaction } from "./transaction";
@@ -58,6 +59,7 @@ export async function deleteMedia(id: string, actor: string) {
     });
     return media;
   });
+  invalidateAdmin("media", "media-options", "audit");
   let fileRemoved = true;
   for (const url of [asset.url, asset.thumbnailUrl].filter(
     (url): url is string => Boolean(url),

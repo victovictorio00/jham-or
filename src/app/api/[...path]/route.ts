@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import {
   AppError,
+  withRequestAuth,
   currentUser,
   requireUser,
   requireAdmin,
@@ -33,9 +34,8 @@ import { timingSafeEqual } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { access } from "node:fs/promises";
 import { placeOrder, changeOrder } from "@/lib/orders";
-import { writeFile, mkdir } from "node:fs/promises";
-import { randomUUID } from "node:crypto";
-import sharp from "sharp";
+import { uploadImage } from "@/lib/upload";
+import { invalidateAdmin, adminSectionTag } from "@/lib/admin-cache";
 import { mediaOptions } from "@/lib/media-options";
 import { transaction } from "@/lib/transaction";
 import {
@@ -181,6 +181,7 @@ async function handler(req: Request, context: Context) {
               passwordHash: password,
             },
           });
+          invalidateAdmin("customers", "overview");
           await createSession(u.id);
           return Response.json({ ok: true }, { status: 201 });
         } catch (e) {
@@ -241,6 +242,7 @@ async function handler(req: Request, context: Context) {
           where: { id: u.id },
           data: { name: data.name, phone: data.phone },
         });
+      invalidateAdmin("customers", "team");
       return Response.json({ ok: true });
     }
     if (route === "orders" && method === "POST") {
@@ -254,6 +256,18 @@ async function handler(req: Request, context: Context) {
       const actor = await requireAdmin();
       const resource = path[1];
       const id = path[2];
+      if (resource === "refresh" && method === "POST") {
+        const { section } = z
+          .object({
+            section: z.enum(
+              Object.keys(adminSectionTag) as [string, ...string[]],
+            ),
+          })
+          .parse(await req.json());
+        if (section === "equipo") await requireAdmin(true);
+        invalidateAdmin(adminSectionTag[section]);
+        return Response.json({ ok: true });
+      }
       if (resource === "orders" && method === "PATCH") {
         if (!id) throw new AppError(400, "Falta el pedido.");
         return Response.json(
@@ -325,54 +339,7 @@ async function handler(req: Request, context: Context) {
         );
       if (resource === "upload" && method === "POST") {
         await rateLimit(`upload:${actor.id}`, 100);
-        const form = await req.formData();
-        const file = form.get("file");
-        if (!(file instanceof File) || file.size > 5 * 1024 * 1024)
-          throw new AppError(400, "Selecciona una imagen de hasta 5 MB.");
-        const bytes = Buffer.from(await file.arrayBuffer());
-        let output;
-        try {
-          output = await sharp(bytes, {
-            limitInputPixels: 25000000,
-            animated: false,
-          })
-            .rotate()
-            .resize(1600, 1600, { fit: "inside", withoutEnlargement: true })
-            .webp({ quality: 82 })
-            .toBuffer({ resolveWithObject: true });
-        } catch {
-          throw new AppError(
-            400,
-            "Imagen no válida. Usa JPG, PNG, WebP o AVIF.",
-          );
-        }
-        const name = randomUUID() + ".webp";
-        await mkdir(process.env.UPLOAD_DIR || "uploads", { recursive: true });
-        await writeFile(
-          `${process.env.UPLOAD_DIR || "uploads"}/${name}`,
-          output.data,
-        );
-        const thumbnailName = name.replace(".webp", "-thumb.webp");
-        const thumbnail = await sharp(output.data)
-          .resize(360, 360, { fit: "inside", withoutEnlargement: true })
-          .webp({ quality: 75 })
-          .toBuffer();
-        await writeFile(
-          `${process.env.UPLOAD_DIR || "uploads"}/${thumbnailName}`,
-          thumbnail,
-        );
-        const media = await db.media.create({
-          data: {
-            url: "/media/" + name,
-            thumbnailUrl: "/media/" + thumbnailName,
-            name: file.name.slice(0, 200),
-            alt: file.name.slice(0, 200),
-            size: output.data.length,
-            width: output.info.width,
-            height: output.info.height,
-          },
-        });
-        return Response.json(media, { status: 201 });
+        return await uploadImage(req);
       }
       if (resource === "settings" && method === "PUT") {
         const data = settingsSchema.parse(await req.json());
@@ -410,6 +377,7 @@ async function handler(req: Request, context: Context) {
           });
           await markPublication(tx, "settings");
         });
+        invalidateAdmin("audit");
         await publishAndInvalidate("settings");
         return Response.json({ ok: true });
       }
@@ -476,6 +444,7 @@ async function handler(req: Request, context: Context) {
           });
           return u;
         });
+        invalidateAdmin("customers", "team", "overview", "audit");
         return Response.json({ id: result.id });
       }
       const schemas = {
@@ -560,6 +529,9 @@ async function handler(req: Request, context: Context) {
               resource === "pages" ? "pages" : "catalog",
             );
         });
+        if (resource === "products" || resource === "categories")
+          invalidateAdmin("products", "categories", "overview", "audit");
+        else invalidateAdmin(resource as "pages" | "coupons", "audit");
         if (resource !== "coupons")
           await publishAndInvalidate(
             resource === "pages" ? "pages" : "catalog",
@@ -574,6 +546,7 @@ async function handler(req: Request, context: Context) {
           })
           .parse(await req.json());
         await db.media.update({ where: { id }, data });
+        invalidateAdmin("media", "media-options");
         return Response.json({ ok: true });
       }
       throw new AppError(404, "Operación no disponible.");
@@ -588,8 +561,10 @@ async function handler(req: Request, context: Context) {
     return failure(e);
   }
 }
-export const GET = handler;
-export const POST = handler;
-export const PUT = handler;
-export const PATCH = handler;
-export const DELETE = handler;
+const scopedHandler = (req: Request, context: Context) =>
+  withRequestAuth(() => handler(req, context));
+export const GET = scopedHandler;
+export const POST = scopedHandler;
+export const PUT = scopedHandler;
+export const PATCH = scopedHandler;
+export const DELETE = scopedHandler;

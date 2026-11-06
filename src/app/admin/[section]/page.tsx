@@ -1,17 +1,13 @@
+import { MediaUpload } from "@/components/media-upload";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Prisma } from "@prisma/client";
-import { db } from "@/lib/db";
 import { adminPage } from "@/lib/auth";
 import { settings } from "@/lib/catalog";
+import { adminRows, adminRecord, categoryOptions } from "@/lib/admin-data";
 import { mediaOptions as imageOptions } from "@/lib/media-options";
-import {
-  Editor,
-  MediaUpload,
-  MediaCard,
-  OrderEditor,
-} from "@/components/admin";
+import { Editor, MediaCard, OrderEditor } from "@/components/admin";
 import { money, statuses } from "@/lib/shared";
 const sections: Record<
   string,
@@ -85,11 +81,7 @@ export default async function AdminSection({
   const p = await searchParams;
   const edit = p.edit;
   const q = (p.q || "").slice(0, 100);
-  const page = Math.min(1000, Math.max(1, Number(p.pagina) || 1));
-  const skip = (page - 1) * 30;
-  const take = 31;
-  const search = (field: string) =>
-    q ? { [field]: { contains: q, mode: "insensitive" } } : {};
+  const page = Math.min(1000, Math.max(1, Math.floor(Number(p.pagina)) || 1));
   if (section === "configuracion") {
     const [storeSettings, images] = await Promise.all([
       settings(),
@@ -102,7 +94,12 @@ export default async function AdminSection({
             <h1>{info.title}</h1>
             <p>{info.description}</p>
           </div>
-          <Link href="/" target="_blank" className="button outline">
+          <Link
+            prefetch={false}
+            href="/"
+            target="_blank"
+            className="button outline"
+          >
             Ver mi tienda ↗
           </Link>
         </div>
@@ -116,35 +113,7 @@ export default async function AdminSection({
     let initial: unknown = { active: true };
     if (edit !== "new") {
       if (!/^[a-f0-9-]{36}$/.test(edit)) notFound();
-      if (section === "productos")
-        initial = await db.product.findUnique({ where: { id: edit } });
-      else if (section === "categorias")
-        initial = await db.category.findUnique({ where: { id: edit } });
-      else if (section === "paginas")
-        initial = await db.page.findUnique({ where: { id: edit } });
-      else if (section === "cupones")
-        initial = await db.coupon.findUnique({ where: { id: edit } });
-      else if (section === "clientes" || section === "equipo") {
-        initial = await db.user.findUnique({
-          where: { id: edit },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            role: true,
-            active: true,
-          },
-        });
-        if (
-          initial &&
-          section === "clientes" &&
-          (initial as { role: string }).role !== "CUSTOMER"
-        )
-          notFound();
-      } else if (section === "pedidos")
-        initial = await db.order.findUnique({ where: { id: edit } });
-      else notFound();
+      initial = await adminRecord(section, edit);
       if (!initial) notFound();
     } else if (!info.create) notFound();
     if (section === "productos" && edit === "new")
@@ -169,17 +138,11 @@ export default async function AdminSection({
       initial = { active: true, minimum: 0, percent: 10, expiresAt: null };
     const [cats, images] =
       section === "productos"
-        ? await Promise.all([
-            db.category.findMany({
-              orderBy: { position: "asc" },
-              select: { id: true, name: true },
-            }),
-            imageOptions(),
-          ])
+        ? await Promise.all([categoryOptions(), imageOptions()])
         : [[], section === "categorias" ? await imageOptions() : []];
     return (
       <>
-        <Link href={`/admin/${section}`} className="text-link">
+        <Link prefetch={false} href={`/admin/${section}`} className="text-link">
           ← {info.title}
         </Link>
         <div className="admin-title">
@@ -206,141 +169,7 @@ export default async function AdminSection({
       </>
     );
   }
-  let rows: Record<string, unknown>[] = [];
-  if (section === "productos")
-    rows = await db.product.findMany({
-      where: {
-        deletedAt: null,
-        ...search("name"),
-        ...(p.stock === "bajo"
-          ? { madeToOrder: false, stock: { lte: 3 } }
-          : {}),
-      },
-      take,
-      skip,
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        sku: true,
-        image: true,
-        price: true,
-        salePrice: true,
-        stock: true,
-        madeToOrder: true,
-        active: true,
-        category: { select: { name: true } },
-      },
-    });
-  else if (section === "categorias")
-    rows = await db.category.findMany({
-      where: search("name"),
-      take,
-      skip,
-      orderBy: { position: "asc" },
-      include: {
-        _count: { select: { products: { where: { deletedAt: null } } } },
-      },
-    });
-  else if (section === "pedidos")
-    rows = await db.order.findMany({
-      where: {
-        ...(p.estado && statuses[p.estado] ? { status: p.estado } : {}),
-        ...(q
-          ? {
-              OR: [
-                { customerName: { contains: q, mode: "insensitive" } },
-                { email: { contains: q, mode: "insensitive" } },
-                ...(Number(q.replace(/^JO-/, "")) > 0
-                  ? [{ number: Number(q.replace(/^JO-/, "")) }]
-                  : []),
-              ],
-            }
-          : {}),
-      },
-      take,
-      skip,
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        number: true,
-        customerName: true,
-        email: true,
-        status: true,
-        paymentStatus: true,
-        total: true,
-        createdAt: true,
-      },
-    });
-  else if (section === "clientes" || section === "equipo")
-    rows = await db.user.findMany({
-      where: {
-        role: section === "clientes" ? "CUSTOMER" : { in: ["ADMIN", "OWNER"] },
-        ...(q
-          ? {
-              OR: [
-                { name: { contains: q, mode: "insensitive" } },
-                { email: { contains: q, mode: "insensitive" } },
-              ],
-            }
-          : {}),
-      },
-      take,
-      skip,
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        role: true,
-        active: true,
-        createdAt: true,
-        _count: { select: { orders: true } },
-      },
-    });
-  else if (section === "paginas")
-    rows = await db.page.findMany({
-      where: search("title"),
-      take,
-      skip,
-      orderBy: { updatedAt: "desc" },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        published: true,
-        updatedAt: true,
-      },
-    });
-  else if (section === "cupones")
-    rows = await db.coupon.findMany({
-      where: search("code"),
-      take,
-      skip,
-      orderBy: { code: "asc" },
-    });
-  else if (section === "historial")
-    rows = await db.audit.findMany({
-      where: q
-        ? {
-            OR: [
-              { actor: { contains: q, mode: "insensitive" } },
-              { summary: { contains: q, mode: "insensitive" } },
-            ],
-          }
-        : {},
-      take,
-      skip,
-      orderBy: { createdAt: "desc" },
-    });
-  else if (section === "media")
-    rows = await db.media.findMany({
-      where: search("name"),
-      take,
-      skip,
-      orderBy: { createdAt: "desc" },
-    });
+  const rows = await adminRows(section, q, page, p.stock, p.estado);
   const link = (id: unknown) => `/admin/${section}?edit=${id}`;
   const href = (n: number) =>
     `/admin/${section}?${new URLSearchParams({ ...(Object.fromEntries(Object.entries(p).filter(([k, v]) => k !== "pagina" && typeof v === "string")) as Record<string, string>), pagina: String(n) })}`;
@@ -358,7 +187,11 @@ export default async function AdminSection({
             </a>
           )}
           {info.create && (
-            <Link href={`/admin/${section}?edit=new`} className="button">
+            <Link
+              prefetch={false}
+              href={`/admin/${section}?edit=new`}
+              className="button"
+            >
               + {info.create}
             </Link>
           )}
@@ -397,7 +230,11 @@ export default async function AdminSection({
           </select>
         )}
         <button className="button small-button">Buscar</button>
-        <Link href={`/admin/${section}`} className="text-link small">
+        <Link
+          prefetch={false}
+          href={`/admin/${section}`}
+          className="text-link small"
+        >
           Limpiar
         </Link>
       </form>
@@ -462,7 +299,11 @@ export default async function AdminSection({
                   {section === "productos" ? (
                     <>
                       <td>
-                        <Link className="table-product" href={link(r.id)}>
+                        <Link
+                          prefetch={false}
+                          className="table-product"
+                          href={link(r.id)}
+                        >
                           <Image
                             src={String(r.image)}
                             alt=""
@@ -487,7 +328,9 @@ export default async function AdminSection({
                   ) : section === "categorias" ? (
                     <>
                       <td>
-                        <Link href={link(r.id)}>{String(r.name)}</Link>
+                        <Link prefetch={false} href={link(r.id)}>
+                          {String(r.name)}
+                        </Link>
                       </td>
                       <td>{String(r.slug)}</td>
                       <td>{(r._count as { products: number }).products}</td>
@@ -496,7 +339,7 @@ export default async function AdminSection({
                   ) : section === "pedidos" ? (
                     <>
                       <td>
-                        <Link href={link(r.id)}>
+                        <Link prefetch={false} href={link(r.id)}>
                           JO-{String(r.number).padStart(5, "0")}
                         </Link>
                       </td>
@@ -529,7 +372,9 @@ export default async function AdminSection({
                   ) : section === "clientes" || section === "equipo" ? (
                     <>
                       <td>
-                        <Link href={link(r.id)}>{String(r.name)}</Link>
+                        <Link prefetch={false} href={link(r.id)}>
+                          {String(r.name)}
+                        </Link>
                       </td>
                       <td>{String(r.email)}</td>
                       <td>{String(r.phone)}</td>
@@ -546,10 +391,16 @@ export default async function AdminSection({
                   ) : section === "paginas" ? (
                     <>
                       <td>
-                        <Link href={link(r.id)}>{String(r.title)}</Link>
+                        <Link prefetch={false} href={link(r.id)}>
+                          {String(r.title)}
+                        </Link>
                       </td>
                       <td>
-                        <Link href={`/paginas/${r.slug}`} target="_blank">
+                        <Link
+                          prefetch={false}
+                          href={`/paginas/${r.slug}`}
+                          target="_blank"
+                        >
                           /{String(r.slug)} ↗
                         </Link>
                       </td>
@@ -563,7 +414,9 @@ export default async function AdminSection({
                   ) : section === "cupones" ? (
                     <>
                       <td>
-                        <Link href={link(r.id)}>{String(r.code)}</Link>
+                        <Link prefetch={false} href={link(r.id)}>
+                          {String(r.code)}
+                        </Link>
                       </td>
                       <td>{String(r.percent)} %</td>
                       <td>{money(Number(r.minimum))}</td>
@@ -603,13 +456,21 @@ export default async function AdminSection({
       )}
       <div className="pagination">
         {page > 1 && (
-          <Link href={href(page - 1)} className="button outline">
+          <Link
+            prefetch={false}
+            href={href(page - 1)}
+            className="button outline"
+          >
             Anterior
           </Link>
         )}
         <span>Página {page}</span>
         {rows.length > 30 && (
-          <Link href={href(page + 1)} className="button outline">
+          <Link
+            prefetch={false}
+            href={href(page + 1)}
+            className="button outline"
+          >
             Siguiente
           </Link>
         )}

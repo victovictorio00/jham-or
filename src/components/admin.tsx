@@ -22,6 +22,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Trash2,
+  RefreshCw,
 } from "lucide-react";
 import { request, Logout } from "./forms";
 import { money, statuses, transitions } from "@/lib/shared";
@@ -49,6 +50,9 @@ export function AdminShell({
   initialCollapsed?: boolean;
 }) {
   const path = usePathname();
+  const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState("");
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(initialCollapsed);
   useEffect(() => setOpen(false), [path]);
@@ -84,6 +88,7 @@ export function AdminShell({
       <aside className={`admin-sidebar${open ? " open" : ""}`}>
         <div className="admin-sidebar-top">
           <Link
+            prefetch={false}
             href="/admin"
             className="wordmark"
             aria-label="Jham-or, resumen"
@@ -125,13 +130,13 @@ export function AdminShell({
         <nav id="admin-navigation" aria-label="Administración">
           {nav.map(([slug, label, Icon]) => (
             <Link
+              prefetch={false}
               href={`/admin${slug ? "/" + slug : ""}`}
               key={slug}
               onClick={() => setOpen(false)}
               className={
                 path === `/admin${slug ? "/" + slug : ""}` ? "active" : ""
               }
-              prefetch={false}
               aria-label={label}
               title={label}
             >
@@ -142,6 +147,7 @@ export function AdminShell({
         </nav>
         <div className="admin-sidebar-footer">
           <Link
+            prefetch={false}
             href="/"
             target="_blank"
             className="view-store"
@@ -151,6 +157,35 @@ export function AdminShell({
             <ExternalLink size={18} />
             <span>Ver mi tienda</span>
           </Link>
+          <button
+            type="button"
+            className="view-store"
+            title="Actualizar datos"
+            aria-label="Actualizar datos"
+            disabled={refreshing}
+            onClick={async () => {
+              setRefreshing(true);
+              setRefreshError("");
+              try {
+                await request("/api/admin/refresh", "POST", {
+                  section: path.split("/")[2] || "overview",
+                });
+                router.refresh();
+              } catch (error) {
+                setRefreshError((error as Error).message);
+              } finally {
+                setRefreshing(false);
+              }
+            }}
+          >
+            <RefreshCw size={18} />
+            <span>{refreshing ? "Actualizando…" : "Actualizar datos"}</span>
+          </button>
+          {refreshError && (
+            <p role="alert" className="small">
+              {refreshError}
+            </p>
+          )}
           <p className="small sidebar-user">{name}</p>
           <Logout icon />
         </div>
@@ -499,7 +534,7 @@ export function Editor({
       );
       setSuccess("Cambios guardados.");
       if (section !== "configuracion") router.push(`/admin/${section}`);
-      router.refresh();
+      if (section === "configuracion") router.refresh();
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -610,6 +645,7 @@ export function Editor({
                         ))}
                       </select>
                       <Link
+                        prefetch={false}
                         href="/admin/media"
                         target="_blank"
                         className="small underlined"
@@ -768,7 +804,6 @@ export function Editor({
                     "DELETE",
                   );
                   router.push(`/admin/${section}`);
-                  router.refresh();
                 } catch (e) {
                   setError((e as Error).message);
                 } finally {
@@ -780,47 +815,6 @@ export function Editor({
             </button>
           )}
       </div>
-    </form>
-  );
-}
-export function MediaUpload() {
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
-  const router = useRouter();
-  return (
-    <form
-      className="media-upload"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        const form = e.currentTarget;
-        setBusy(true);
-        setMessage("");
-        try {
-          await request("/api/admin/upload", "POST", new FormData(form));
-          setMessage("Imagen optimizada y guardada.");
-          form.reset();
-          router.refresh();
-        } catch (e) {
-          setMessage((e as Error).message);
-        } finally {
-          setBusy(false);
-        }
-      }}
-    >
-      <label>
-        Subir imagen (JPG, PNG, WebP o AVIF · hasta 5 MB)
-        <input
-          type="file"
-          name="file"
-          accept="image/jpeg,image/png,image/webp,image/avif"
-          required
-        />
-      </label>
-      <button className="button" disabled={busy}>
-        <Upload size={17} />
-        {busy ? "Optimizando…" : "Subir imagen"}
-      </button>
-      {message && <p role="status">{message}</p>}
     </form>
   );
 }

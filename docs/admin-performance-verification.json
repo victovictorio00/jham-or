@@ -1,0 +1,479 @@
+{
+  "at": "2026-11-06T01:42:23.600Z",
+  "image": "sha256:af9195838c5d9ffeb0dcca1c9ac58b8a4b76be4a31b6439cf96edb96e21387b0",
+  "tests": {
+    "unit": 10,
+    "browser": 16,
+    "typecheck": true,
+    "productionReadOnly": true
+  },
+  "admin": {
+    "before": {
+      "at": "2026-11-06T01:28:42.499Z",
+      "base": "https://jhamor.purprum.com",
+      "notes": "Read-only complete HTML requests. Each request checks current permissions. Aggregate pg_stat_statements deltas may include concurrent activity; no SQL parameters or response bodies are recorded.",
+      "results": [
+        {
+          "route": "/admin",
+          "cold": {
+            "ms": 92.4,
+            "queries": 8,
+            "sqlMs": 0.42
+          },
+          "repeat": [
+            {
+              "ms": 62.5,
+              "queries": 8,
+              "sqlMs": 0.35
+            },
+            {
+              "ms": 35.9,
+              "queries": 8,
+              "sqlMs": 0.33
+            },
+            {
+              "ms": 56.2,
+              "queries": 8,
+              "sqlMs": 0.61
+            }
+          ]
+        },
+        {
+          "route": "/admin/productos",
+          "cold": {
+            "ms": 58.2,
+            "queries": 4,
+            "sqlMs": 0.15
+          },
+          "repeat": [
+            {
+              "ms": 62.1,
+              "queries": 4,
+              "sqlMs": 0.26
+            },
+            {
+              "ms": 44.1,
+              "queries": 4,
+              "sqlMs": 0.13
+            },
+            {
+              "ms": 75.2,
+              "queries": 4,
+              "sqlMs": 0.16
+            }
+          ]
+        },
+        {
+          "route": "/admin/pedidos",
+          "cold": {
+            "ms": 88.3,
+            "queries": 3,
+            "sqlMs": 0.08
+          },
+          "repeat": [
+            {
+              "ms": 36.6,
+              "queries": 3,
+              "sqlMs": 0.1
+            },
+            {
+              "ms": 45.5,
+              "queries": 3,
+              "sqlMs": 0.07
+            },
+            {
+              "ms": 41.5,
+              "queries": 3,
+              "sqlMs": 0.08
+            }
+          ]
+        },
+        {
+          "route": "/admin/clientes",
+          "cold": {
+            "ms": 37.7,
+            "queries": 3,
+            "sqlMs": 0.16
+          },
+          "repeat": [
+            {
+              "ms": 33,
+              "queries": 3,
+              "sqlMs": 0.12
+            },
+            {
+              "ms": 49.3,
+              "queries": 3,
+              "sqlMs": 0.12
+            },
+            {
+              "ms": 31.2,
+              "queries": 3,
+              "sqlMs": 0.15
+            }
+          ]
+        },
+        {
+          "route": "/admin/media",
+          "cold": {
+            "ms": 37,
+            "queries": 3,
+            "sqlMs": 0.09
+          },
+          "repeat": [
+            {
+              "ms": 34.3,
+              "queries": 3,
+              "sqlMs": 0.11
+            },
+            {
+              "ms": 37.5,
+              "queries": 3,
+              "sqlMs": 0.14
+            },
+            {
+              "ms": 49.7,
+              "queries": 3,
+              "sqlMs": 0.08
+            }
+          ]
+        },
+        {
+          "route": "/admin/configuracion",
+          "cold": {
+            "ms": 42.5,
+            "queries": 3,
+            "sqlMs": 0.18
+          },
+          "repeat": [
+            {
+              "ms": 56.5,
+              "queries": 3,
+              "sqlMs": 0.14
+            },
+            {
+              "ms": 49.9,
+              "queries": 3,
+              "sqlMs": 0.08
+            },
+            {
+              "ms": 61.6,
+              "queries": 3,
+              "sqlMs": 0.11
+            }
+          ]
+        },
+        {
+          "route": "/admin/historial",
+          "cold": {
+            "ms": 37.4,
+            "queries": 3,
+            "sqlMs": 0.1
+          },
+          "repeat": [
+            {
+              "ms": 37.9,
+              "queries": 3,
+              "sqlMs": 0.08
+            },
+            {
+              "ms": 35.9,
+              "queries": 3,
+              "sqlMs": 0.07
+            },
+            {
+              "ms": 31.7,
+              "queries": 3,
+              "sqlMs": 0.07
+            }
+          ]
+        }
+      ]
+    },
+    "after": {
+      "at": "2026-11-06T01:41:30.063Z",
+      "base": "https://jhamor.purprum.com",
+      "notes": "Read-only complete HTML requests. Each request checks current permissions. Aggregate pg_stat_statements deltas may include concurrent activity; no SQL parameters or response bodies are recorded.",
+      "results": [
+        {
+          "route": "/admin",
+          "cold": {
+            "ms": 70.2,
+            "queries": 2,
+            "sqlMs": 0.38
+          },
+          "repeat": [
+            {
+              "ms": 52,
+              "queries": 1,
+              "sqlMs": 0.04
+            },
+            {
+              "ms": 42,
+              "queries": 1,
+              "sqlMs": 0.05
+            },
+            {
+              "ms": 62.8,
+              "queries": 1,
+              "sqlMs": 0.05
+            }
+          ]
+        },
+        {
+          "route": "/admin/productos",
+          "cold": {
+            "ms": 53.9,
+            "queries": 3,
+            "sqlMs": 0.11
+          },
+          "repeat": [
+            {
+              "ms": 45.3,
+              "queries": 1,
+              "sqlMs": 0.04
+            },
+            {
+              "ms": 57.1,
+              "queries": 1,
+              "sqlMs": 0.06
+            },
+            {
+              "ms": 32.9,
+              "queries": 1,
+              "sqlMs": 0.05
+            }
+          ]
+        },
+        {
+          "route": "/admin/pedidos",
+          "cold": {
+            "ms": 41.2,
+            "queries": 2,
+            "sqlMs": 0.09
+          },
+          "repeat": [
+            {
+              "ms": 40.8,
+              "queries": 1,
+              "sqlMs": 0.06
+            },
+            {
+              "ms": 42,
+              "queries": 1,
+              "sqlMs": 0.05
+            },
+            {
+              "ms": 30.7,
+              "queries": 1,
+              "sqlMs": 0.06
+            }
+          ]
+        },
+        {
+          "route": "/admin/clientes",
+          "cold": {
+            "ms": 46.9,
+            "queries": 2,
+            "sqlMs": 0.13
+          },
+          "repeat": [
+            {
+              "ms": 29.1,
+              "queries": 1,
+              "sqlMs": 0.05
+            },
+            {
+              "ms": 37.4,
+              "queries": 1,
+              "sqlMs": 0.06
+            },
+            {
+              "ms": 51.8,
+              "queries": 1,
+              "sqlMs": 0.05
+            }
+          ]
+        },
+        {
+          "route": "/admin/media",
+          "cold": {
+            "ms": 55.9,
+            "queries": 2,
+            "sqlMs": 0.11
+          },
+          "repeat": [
+            {
+              "ms": 29.9,
+              "queries": 1,
+              "sqlMs": 0.06
+            },
+            {
+              "ms": 43,
+              "queries": 1,
+              "sqlMs": 0.05
+            },
+            {
+              "ms": 28.3,
+              "queries": 1,
+              "sqlMs": 0.06
+            }
+          ]
+        },
+        {
+          "route": "/admin/configuracion",
+          "cold": {
+            "ms": 30.9,
+            "queries": 2,
+            "sqlMs": 0.09
+          },
+          "repeat": [
+            {
+              "ms": 28.5,
+              "queries": 1,
+              "sqlMs": 0.06
+            },
+            {
+              "ms": 29.8,
+              "queries": 1,
+              "sqlMs": 0.05
+            },
+            {
+              "ms": 29.7,
+              "queries": 1,
+              "sqlMs": 0.05
+            }
+          ]
+        },
+        {
+          "route": "/admin/historial",
+          "cold": {
+            "ms": 34.2,
+            "queries": 2,
+            "sqlMs": 0.1
+          },
+          "repeat": [
+            {
+              "ms": 29.6,
+              "queries": 1,
+              "sqlMs": 0.08
+            },
+            {
+              "ms": 34.7,
+              "queries": 1,
+              "sqlMs": 0.06
+            },
+            {
+              "ms": 38.4,
+              "queries": 1,
+              "sqlMs": 0.05
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "upload": {
+    "before": {
+      "at": "2026-11-06T01:36:26.430Z",
+      "base": "http://localhost:3012",
+      "notes": "Local QA only, three sequential samples per input; source is a public sample expanded to 3000×2000 JPEG. Prepared input approximates browser compression, whose actual transfer is separately tested in Playwright. Not an internet bandwidth measurement.",
+      "results": [
+        {
+          "input": "original",
+          "bytes": 1201937,
+          "ms": 302.6,
+          "serverTiming": null,
+          "storedBytes": 161252
+        },
+        {
+          "input": "original",
+          "bytes": 1201937,
+          "ms": 294.8,
+          "serverTiming": null,
+          "storedBytes": 161252
+        },
+        {
+          "input": "original",
+          "bytes": 1201937,
+          "ms": 271,
+          "serverTiming": null,
+          "storedBytes": 161252
+        },
+        {
+          "input": "prepared",
+          "bytes": 161252,
+          "ms": 238.5,
+          "serverTiming": null,
+          "storedBytes": 152438
+        },
+        {
+          "input": "prepared",
+          "bytes": 161252,
+          "ms": 251.4,
+          "serverTiming": null,
+          "storedBytes": 152438
+        },
+        {
+          "input": "prepared",
+          "bytes": 161252,
+          "ms": 272.9,
+          "serverTiming": null,
+          "storedBytes": 152438
+        }
+      ]
+    },
+    "after": {
+      "at": "2026-11-06T01:41:12.052Z",
+      "base": "http://localhost:3012",
+      "notes": "Local QA only, three sequential samples per input; source is a public sample expanded to 3000×2000 JPEG. Prepared input approximates browser compression, whose actual transfer is separately tested in Playwright. Not an internet bandwidth measurement.",
+      "results": [
+        {
+          "input": "original",
+          "bytes": 1201937,
+          "ms": 256.9,
+          "serverTiming": "receive;dur=6.6, queue;dur=0.0, process;dur=218.0, write;dur=1.8, database;dur=3.9",
+          "storedBytes": 161252
+        },
+        {
+          "input": "original",
+          "bytes": 1201937,
+          "ms": 237,
+          "serverTiming": "receive;dur=4.8, queue;dur=0.0, process;dur=211.0, write;dur=4.2, database;dur=3.5",
+          "storedBytes": 161252
+        },
+        {
+          "input": "original",
+          "bytes": 1201937,
+          "ms": 251.6,
+          "serverTiming": "receive;dur=5.1, queue;dur=0.0, process;dur=211.5, write;dur=12.4, database;dur=7.9",
+          "storedBytes": 161252
+        },
+        {
+          "input": "prepared",
+          "bytes": 161252,
+          "ms": 227.4,
+          "serverTiming": "receive;dur=1.0, queue;dur=0.0, process;dur=209.2, write;dur=1.5, database;dur=2.8",
+          "storedBytes": 152438
+        },
+        {
+          "input": "prepared",
+          "bytes": 161252,
+          "ms": 208.7,
+          "serverTiming": "receive;dur=0.8, queue;dur=0.0, process;dur=187.5, write;dur=2.7, database;dur=6.4",
+          "storedBytes": 152438
+        },
+        {
+          "input": "prepared",
+          "bytes": 161252,
+          "ms": 241.3,
+          "serverTiming": "receive;dur=1.1, queue;dur=0.0, process;dur=224.2, write;dur=1.3, database;dur=2.4",
+          "storedBytes": 152438
+        }
+      ]
+    }
+  },
+  "measurementImage": "sha256:0a66f8117f94e12a3c52d3c1417d415fed64462f62ccc99abecbbeb9e94a168e",
+  "notes": "SQL and upload measurements preceded a final correction to singular/plural upload messages. Server processing and cache code were unchanged. The final image runs the complete browser suite.",
+  "finalVerifiedAt": "2026-11-06T01:46:09.942Z"
+}

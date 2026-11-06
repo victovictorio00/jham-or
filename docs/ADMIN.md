@@ -4,6 +4,8 @@ Entra en https://jhamor.purprum.com/admin. Si todavía no has iniciado sesión, 
 
 En escritorio, el botón junto a la marca contrae el menú a iconos y recuerda la elección. Cada icono conserva el nombre de su sección al pasar el cursor. En móvil se utiliza el botón de menú, con cierre mediante Escape o el fondo exterior. La antigua franja decorativa superior se retiró.
 
+El panel reutiliza los datos consultados y los actualiza al guardar cambios. El botón Actualizar datos del menú fuerza una lectura de la sección actual, útil después de cambios realizados desde fuera de la aplicación. No hay consultas periódicas; los permisos se comprueban en cada petición.
+
 ## Apertura
 
 El catálogo de seis muebles es una **muestra**, con fotografías de referencia obtenidas de Unsplash. Sustituye nombres, fotos, materiales, medidas, precios y existencias por tus productos reales. No se han copiado clientes, cuentas ni pedidos de Auriel.
@@ -30,7 +32,7 @@ Clientes permite editar datos y desactivar cuentas. Una cuenta desactivada pierd
 
 ## Imágenes y contenido
 
-Fotos e imágenes acepta archivos de hasta 5 MB y 25 megapíxeles. El servidor los convierte en WebP de hasta 1600 px. Puedes editar el título y texto alternativo y copiar su ruta. Los selectores de productos y portada usan miniaturas de esa biblioteca. Después de subir en otra pestaña, pulsa Actualizar biblioteca: se actualizan las opciones sin recargar el editor ni perder sus textos.
+Imágenes permite seleccionar hasta 20 fotos por lote, de hasta 5 MB y 25 megapíxeles cada una. El navegador reduce el tamaño antes de enviarlas cuando es compatible y muestra el progreso de cada archivo. Se envían dos fotos simultáneamente; si alguna falla, Reintentar pendientes conserva las que ya se guardaron. La biblioteca se actualiza una vez al terminar cada lote. El servidor los convierte en WebP de hasta 1600 px. Puedes editar el título y texto alternativo y copiar su ruta. Los selectores de productos y portada usan miniaturas de esa biblioteca. Después de subir en otra pestaña, pulsa Actualizar biblioteca: se actualizan las opciones sin recargar el editor ni perder sus textos.
 
 Cada tarjeta permite Eliminar. Se pide confirmación y se comprueba su uso; las imágenes vinculadas a productos, galerías, portada, categorías, páginas o pedidos deben conservarse o reemplazarse antes. Las imágenes sin referencias se retiran de la biblioteca junto con el original y la miniatura. Un pedido histórico puede seguir necesitando una imagen aunque la ficha del producto se haya editado.
 

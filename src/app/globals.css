@@ -2523,3 +2523,8 @@ tbody tr:last-child td {
   align-items: center;
   gap: 6px;
 }
+
+.upload-queue{list-style:none;padding:0;margin:0;display:grid;gap:10px;width:100%;max-height:360px;overflow:auto}
+.upload-queue li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 16px;padding:10px 12px;background:var(--paper,#faf8f4);border:1px solid var(--line,#ddd);border-radius:6px;font-size:.85rem}
+.upload-queue li>span:first-child{overflow-wrap:anywhere}.upload-queue progress,.upload-queue small{grid-column:1/-1;width:100%}.upload-queue progress{accent-color:#79674f}.upload-queue small{color:#a13224}
+.media-upload{flex-wrap:wrap}.admin-sidebar-footer button.view-store{background:none;border:0;text-align:left;cursor:pointer;font:inherit;color:inherit;width:100%}

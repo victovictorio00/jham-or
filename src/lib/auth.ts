@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { AsyncLocalStorage } from "node:async_hooks";
 import { cookies } from "next/headers";
 import { randomBytes, createHash } from "node:crypto";
 import { db } from "./db";
@@ -13,26 +14,32 @@ export class AppError extends Error {
     super(message);
   }
 }
-export const currentUser = cache(async () => {
+export type CurrentUser = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+  active: boolean;
+};
+const requestAuth = new AsyncLocalStorage<{
+  user?: Promise<CurrentUser | null>;
+}>();
+export function withRequestAuth<T>(work: () => Promise<T>) {
+  return requestAuth.run({}, work);
+}
+async function loadCurrentUser(): Promise<CurrentUser | null> {
   const token = (await cookies()).get(cookieName)?.value;
   if (!token) return null;
-  const s = await db.session.findUnique({
-    where: { tokenHash: hash(token) },
-    select: {
-      expiresAt: true,
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          phone: true,
-          role: true,
-          active: true,
-        },
-      },
-    },
-  });
-  return s && s.expiresAt > new Date() && s.user.active ? s.user : null;
+  const users = await db.$queryRaw<
+    CurrentUser[]
+  >`SELECT u."id",u."name",u."email",u."phone",u."role",u."active" FROM "Session" s JOIN "User" u ON u."id"=s."userId" WHERE s."tokenHash"=${hash(token)} AND s."expiresAt">${new Date()} AND u."active"=true LIMIT 1`;
+  return users[0] ?? null;
+}
+export const currentUser = cache(() => {
+  const context = requestAuth.getStore();
+  if (context) return (context.user ??= loadCurrentUser());
+  return loadCurrentUser();
 });
 export async function requireUser() {
   const u = await currentUser();
