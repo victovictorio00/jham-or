@@ -1486,11 +1486,6 @@
   border-radius: 30px;
   backdrop-filter: blur(8px);
 }
-.carousel-controls > span {
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
-}
 .carousel-dots {
   display: flex;
   gap: 3px;

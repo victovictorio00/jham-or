@@ -165,10 +165,6 @@ export function HomeCarousel({ images }: { images: string[] }) {
                 />
               ))}
             </div>
-            <span>
-              {String(index + 1).padStart(2, "0")} /{" "}
-              {String(slides.length).padStart(2, "0")}
-            </span>
           </div>
         </>
       )}

@@ -1,3 +1,13 @@
+# Carrusel sin contador — 7 de noviembre de 2026
+
+Retirado el texto numérico de posición y total de fotografías. Las flechas, indicadores, avance automático y arrastre se conservan.
+
+Compilación de producción y TypeScript aprobados. En el dominio real se comprobó la ausencia del contador, los tres indicadores correspondientes a las imágenes actuales, el cambio de fotografía mediante la flecha siguiente y la ausencia de desbordamiento en móvil y errores JavaScript. La aplicación quedó saludable.
+
+Imagen desplegada: `sha256:30483cbf3a3338ca9b8c4d03263d01858ca8ecace00081f8267f41b796d4f417`. No se modifican datos ni consultas y no se repiten las pruebas comerciales para esta retirada de texto.
+
+Evidencias: [comprobación del dominio](carousel-no-counter-verification.json) y [JF-38](historial/JF-38-retirada-del-contador-del-carrusel.md). Los informes siguientes conservan los resultados de entregas anteriores.
+
 # Carrusel automático y arrastre con el mouse — 7 de noviembre de 2026
 
 Retirado el botón de pausa/reanudación. El carrusel avanza cada seis segundos y sigue funcionando con el mouse encima. Se puede arrastrar horizontalmente con mouse, lápiz o pantalla táctil. Las flechas e indicadores permanecen y una selección manual reinicia el intervalo.

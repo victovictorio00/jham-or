@@ -53,6 +53,7 @@ Fecha de esta serie documental: **5 de noviembre de 2026**. Referencia del códi
 | JF-35 | [Variantes con precio, stock y fotos propios](JF-35-variantes-con-precio-stock-y-galeria-propios.md) | Modelo, administración, fotos, bolsa, reserva y cancelación independiente. |
 | JF-36 | [Mi cuenta amplia y cierre de portada](JF-36-mi-cuenta-amplia-y-cierre-de-portada.md) | Panel personal, pedidos, perfil y retirada del bloque solicitado. |
 | JF-37 | [Carrusel automático y arrastre con el mouse](JF-37-carrusel-automatico-y-arrastre-con-el-mouse.md) | Sin botón de pausa, avance por tiempo y gestos de mouse y pantalla táctil. |
+| JF-38 | [Retirada del contador del carrusel](JF-38-retirada-del-contador-del-carrusel.md) | Elimina la numeración de posición y total de fotografías. |
 
 ## Rutas de lectura sugeridas
 
@@ -64,7 +65,7 @@ Fecha de esta serie documental: **5 de noviembre de 2026**. Referencia del códi
 
 ## Cómo continuar el historial
 
-El próximo número disponible es **JF-38**. Crea `JF-38-titulo-descriptivo.md`, explica el cambio con sus motivos y evidencias y añade su fila a este índice. No renumeres los documentos existentes para insertar un tema nuevo.
+El próximo número disponible es **JF-39**. Crea `JF-39-titulo-descriptivo.md`, explica el cambio con sus motivos y evidencias y añade su fila a este índice. No renumeres los documentos existentes para insertar un tema nuevo.
 
 Una evolución posterior se documenta con otro número y un enlace al antecedente. Los datos comerciales del panel mantienen su auditoría en la aplicación; no se ha instalado un generador automático de Markdown por cada producto editado.
 
