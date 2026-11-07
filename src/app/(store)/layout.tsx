@@ -1,3 +1,4 @@
+import { ScrollReveal } from "@/components/scroll-reveal";
 import localFont from "next/font/local";
 import "../storefront.css";
 import Link from "next/link";
@@ -39,6 +40,7 @@ export default async function StoreLayout({
         Saltar al contenido
       </a>
       <Header brand={s.brand} groups={groups} />
+      <ScrollReveal />
       <main id="contenido">{children}</main>
       <footer className="footer">
         <div className="footer-heading">

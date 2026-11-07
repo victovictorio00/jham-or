@@ -1,0 +1,16 @@
+{
+  "at": "2026-11-07T07:22:30.201Z",
+  "base": "https://jhamor.purprum.com",
+  "homeProducts": 6,
+  "desktopReveal": true,
+  "mobileReveal": true,
+  "carouselRatioDesktop": 2.286,
+  "carouselRatioMobile": 2.286,
+  "imagesNotCropped": true,
+  "reducedMotion": true,
+  "withoutJavascript": true,
+  "adminPanoramicPreview": true,
+  "adminFormatGuidance": true,
+  "scrollApiRequests": 0,
+  "javascriptErrors": []
+}

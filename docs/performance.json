@@ -1,5 +1,5 @@
 {
-  "at": "2026-11-06T22:47:32.490Z",
+  "at": "2026-11-07T07:22:47.073Z",
   "base": "https://jhamor.purprum.com",
   "notes": "Complete HTML requests from this server, including the first request of each measured URL and a never-seen search. Routes were preloaded by server startup, not by this verifier. Public SQL includes Product, ProductVariant, Category, Setting, Page and PublicationState. Private operations and SELECT 1 health checks are excluded.",
   "results": [
@@ -10,8 +10,8 @@
       "cacheStatuses": [
         "HIT"
       ],
-      "p50ms": 41.3,
-      "p95ms": 119.7
+      "p50ms": 37.2,
+      "p95ms": 129.2
     },
     {
       "path": "/productos",
@@ -20,8 +20,8 @@
       "cacheStatuses": [
         "HIT"
       ],
-      "p50ms": 26.1,
-      "p95ms": 194.7
+      "p50ms": 25.1,
+      "p95ms": 46.7
     },
     {
       "path": "/productos/sofa-olivo",
@@ -30,8 +30,8 @@
       "cacheStatuses": [
         "HIT"
       ],
-      "p50ms": 32.5,
-      "p95ms": 59.8
+      "p50ms": 22.7,
+      "p95ms": 49.1
     },
     {
       "path": "/nosotros",
@@ -40,8 +40,8 @@
       "cacheStatuses": [
         "HIT"
       ],
-      "p50ms": 26.4,
-      "p95ms": 50.1
+      "p50ms": 24.1,
+      "p95ms": 72.1
     },
     {
       "path": "/paginas/terminos",
@@ -50,18 +50,18 @@
       "cacheStatuses": [
         "HIT"
       ],
-      "p50ms": 25.3,
-      "p95ms": 27.5
+      "p50ms": 20.9,
+      "p95ms": 37.3
     },
     {
-      "path": "/productos?q=877222ca-f96d-4d11-b74c-d511107e5b60",
+      "path": "/productos?q=3c2ee891-979e-4fef-8d5c-713de85499e3",
       "requests": 15,
       "additionalPublicQueries": 0,
       "cacheStatuses": [
         "HIT"
       ],
-      "p50ms": 26.6,
-      "p95ms": 38.4
+      "p50ms": 23.6,
+      "p95ms": 28.4
     },
     {
       "path": "/productos?categoria=sala&orden=price-asc",
@@ -70,8 +70,8 @@
       "cacheStatuses": [
         "HIT"
       ],
-      "p50ms": 28.3,
-      "p95ms": 64.2
+      "p50ms": 21.9,
+      "p95ms": 28.8
     }
   ]
 }

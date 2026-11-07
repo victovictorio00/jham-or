@@ -60,3 +60,12 @@ El cliente puede previsualizar las variantes desde las miniaturas de la tarjeta 
 La biblioteca protege las fotografías usadas por variantes activas, carruseles y pedidos históricos. Para borrar un archivo vinculado, sustituye primero sus referencias editables; una referencia en un pedido histórico debe conservarse.
 
 Los menús de colección muestran hasta seis productos reales de cada categoría. Se preparan con la publicación del catálogo: pasar el mouse, cambiar una variante o elegir una foto no provoca consultas SQL. Mi cuenta presenta los pedidos y datos personales en un diseño amplio, adaptable a móviles; esa información sigue siendo privada.
+
+
+## Preparar fotografías de portada
+
+Usa una composición horizontal de **1920 × 840 px (16:7)** para llenar el carrusel. El marco tiene esa proporción tanto en escritorio como en móvil. Las imágenes de otro formato se muestran completas con márgenes del color de fondo, sin deformarlas ni cortar el mueble.
+
+En Diseño y tienda, cada vista previa utiliza ese mismo marco. Si la proporción se aleja de la recomendada aparece un aviso bajo la fotografía. Las imágenes anteriores siguen siendo válidas; para evitar márgenes prepara una versión panorámica y sustitúyela en la selección.
+
+La portada muestra hasta seis productos seleccionados; la colección completa muestra veinticuatro por página. Los filtros se aplican antes de paginar. Las tarjetas aparecen al entrar en pantalla, con movimiento desactivado cuando el visitante solicita movimiento reducido en su sistema.

@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { useState } from "react";
 import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 import { Select } from "./select";
 type Choice = { url: string; name: string; thumbnailUrl?: string | null };
@@ -10,6 +11,7 @@ export function ImageListEditor({
   choices,
   max = 10,
   required = false,
+  panoramic = false,
   onChange,
 }: {
   label: string;
@@ -18,15 +20,30 @@ export function ImageListEditor({
   choices: Choice[];
   max?: number;
   required?: boolean;
+  panoramic?: boolean;
   onChange: (images: string[]) => void;
 }) {
+  const [ratios, setRatios] = useState<Record<string, number>>({});
   const move = (index: number, offset: number) => {
     const copy = [...value];
     [copy[index], copy[index + offset]] = [copy[index + offset], copy[index]];
     onChange(copy);
   };
   return (
-    <div className="image-list-editor" role="group" aria-label={label}>
+    <div
+      className={`image-list-editor${panoramic ? " panoramic-editor" : ""}`}
+      role="group"
+      aria-label={label}
+    >
+      {panoramic && (
+        <p className="carousel-format-help">
+          Formato de portada: <strong>16:7 horizontal</strong>. Recomendado:{" "}
+          <strong>1920 × 840 px</strong>. Usa fotografías panorámicas con el
+          mueble y los detalles dentro del encuadre. Las fotos de otras
+          proporciones se mostrarán completas, con márgenes, sin estirarlas ni
+          cortarlas.
+        </p>
+      )}
       {required && (
         <input
           className="array-required-control"
@@ -53,16 +70,39 @@ export function ImageListEditor({
               <li key={url}>
                 <div className="image-list-preview">
                   <Image
-                    src={choice?.thumbnailUrl || url}
+                    src={panoramic ? url : choice?.thumbnailUrl || url}
                     alt={`Imagen ${index + 1} de ${label.toLowerCase()}`}
                     width={220}
                     height={145}
                     sizes="(max-width:600px) 42vw, 180px"
-                    unoptimized={Boolean(choice?.thumbnailUrl)}
+                    unoptimized={!panoramic && Boolean(choice?.thumbnailUrl)}
+                    onLoad={
+                      panoramic
+                        ? (event) => {
+                            const image = event.currentTarget;
+                            const ratio =
+                              image.naturalWidth / image.naturalHeight;
+                            setRatios((current) =>
+                              current[url] === ratio
+                                ? current
+                                : { ...current, [url]: ratio },
+                            );
+                          }
+                        : undefined
+                    }
                   />
                   <span>{String(index + 1).padStart(2, "0")}</span>
                 </div>
                 <p>{choice?.name || "Imagen guardada"}</p>
+                {panoramic &&
+                  ratios[url] &&
+                  Math.abs(ratios[url] / (16 / 7) - 1) > 0.08 && (
+                    <div className="carousel-format-warning" role="status">
+                      Esta foto no es panorámica 16:7: aparecerá con márgenes.
+                      Para llenar la portada, prepara una versión de 1920 × 840
+                      px.
+                    </div>
+                  )}
                 <div className="image-list-actions">
                   <button
                     type="button"

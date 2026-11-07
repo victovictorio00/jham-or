@@ -1421,7 +1421,8 @@
 /* Image-only carousel */
 .home-carousel {
   position: relative;
-  height: clamp(420px, 49vw, 740px);
+  aspect-ratio: 16 / 7;
+  height: auto;
   background: #e9e1d6;
   overflow: hidden;
   touch-action: pan-y;
@@ -1444,7 +1445,7 @@
   z-index: 1;
 }
 .carousel-slide img {
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 .carousel-arrow {
@@ -1978,9 +1979,6 @@
   .nav-quick-product > span {
     font-size: 9px;
   }
-  .home-carousel {
-    height: clamp(370px, 68vw, 560px);
-  }
   .carousel-arrow {
     width: 38px;
     height: 38px;
@@ -2018,9 +2016,6 @@
 @media (max-width: 600px) {
   .storefront .spaces-section h1 {
     font-size: 42px;
-  }
-  .home-carousel {
-    height: 440px;
   }
   .carousel-controls {
     bottom: 18px;
@@ -2192,4 +2187,12 @@
     max-width: none;
     justify-content: flex-start;
   }
+}
+
+/* Gentle depth on the editorial collection, without scroll handlers. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .storefront .product-card .product-image img,
+  .storefront .category-photo img { transition: transform .85s cubic-bezier(.16,1,.3,1); }
+  .storefront .product-card:hover .product-image img,
+  .storefront .category-card:hover .category-photo img { transform: scale(1.045); }
 }

@@ -753,6 +753,7 @@ export function Editor({
                       value={Array.isArray(stored) ? (stored as string[]) : []}
                       choices={imageChoices}
                       max={8}
+                      panoramic
                       required
                       onChange={(images) => set(f.key, images)}
                     />

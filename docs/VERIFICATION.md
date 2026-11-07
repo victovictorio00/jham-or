@@ -1,3 +1,17 @@
+# Formato panorámico y entradas al desplazarse — 7 de noviembre de 2026
+
+La portada mantiene hasta seis productos seleccionados; la colección completa mantiene veinticuatro por página, con la segunda desde el producto 25 y la tercera desde el 49. Los filtros y la ordenación preceden a la paginación. Los límites se verificaron en el código existente y no se modificaron.
+
+El carrusel usa un marco constante 16:7 en escritorio y móvil, con imágenes completas y proporcionadas. El panel recomienda 1920 × 840 px, muestra vistas previas con ese marco y avisa si una fotografía tendrá márgenes. No se obliga a sustituir fotografías existentes ni se recortan automáticamente. Las tarjetas y bloques editoriales incorporan entradas al desplazarse y acercamiento suave de fotos con hover.
+
+Compilación de producción y TypeScript aprobados. El verificador específico pasó en QA y en el dominio real: seis productos de portada, proporción 2,286 en ambos tamaños, imágenes sin recorte, tarjetas animadas al entrar en pantalla, ausencia de desbordamiento, contenido visible sin JavaScript y movimiento reducido respetado. También revisó guía y vista previa del panel. El desplazamiento produjo **0 peticiones API** y no se detectaron errores JavaScript.
+
+Tras desplegar se midieron **105 respuestas HTML públicas con 0 consultas SQL públicas adicionales**, incluyendo ProductVariant en el contador. No se repitieron las pruebas de compras para este cambio de presentación. La verificación no crea productos ni pedidos y solo abre una sesión propia para revisar el editor.
+
+Imagen desplegada y saludable: `sha256:da7ee04223e7724a16adc56f446fedb3ef4b5721cc510c816de8336602741603`. No hay migraciones ni dependencias nuevas.
+
+Evidencias: [comprobación de diseño](scroll-format-verification.json), [SQL/HTTP](performance.json), [productos en escritorio](scroll-products-desktop.png), [productos en móvil](scroll-products-mobile.png), [verificador](../scripts/verify-scroll-format.mjs) y [JF-39](historial/JF-39-formato-panoramico-y-animaciones-al-desplazarse.md). Los informes siguientes son antecedentes de sus respectivas entregas.
+
 # Carrusel sin contador — 7 de noviembre de 2026
 
 Retirado el texto numérico de posición y total de fotografías. Las flechas, indicadores, avance automático y arrastre se conservan.
